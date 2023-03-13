@@ -1,0 +1,10 @@
+import uml;
+import UMLLabProfile;
+import PHPProfile;
+	 
+String getForeignKey(Property this) :
+	if ForeignKey.isInstance(this) then 
+		((ForeignKey)this).keyName
+	else
+		this.name
+;

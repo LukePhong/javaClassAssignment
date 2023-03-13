@@ -1,0 +1,10 @@
+package board;
+
+public class Position {
+	public Position(int i, int j) {
+		pos[0]=i;
+		pos[1]=j;
+	}
+
+	public int[] pos=new int[2];
+}

@@ -1,0 +1,44 @@
+package control;
+
+
+import board.*;
+import mapper.*;
+import util.*;
+
+public class Controller {
+	
+	
+	public static BoardMap mapbuffer;
+	
+	public static Object handleEvent(ExchangeCommands x,Event e) {
+		
+		return EventProcess.processExchangeCommand(x,e);
+	}
+	
+	public boolean storeBoard(Position p) {
+		
+		return mapbuffer.insert(p);
+	}
+	
+	public boolean isWin() {
+		
+		return true;
+	}
+
+	public static void init() {
+		
+		mapbuffer=new BoardMap();
+		
+	}
+
+	public static BoardBuffer getMap() {
+		
+		return mapbuffer.get();
+	}
+
+	public static Player check(Position tmpPos) {
+		return BoardMap.find(tmpPos);
+	}
+	
+	
+}

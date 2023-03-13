@@ -1,0 +1,60 @@
+«IMPORT uml»
+«IMPORT UMLLabProfile»
+«IMPORT PHPProfile»
+
+«EXTENSION Utility»
+«EXTENSION PHP::standard::structure::Attribute»
+«EXTENSION PHP::standard::structure::Operation»
+
+«DEFINE unit(Namespace currentNamespace, CakePHPStyledElement style) FOR Classifier»
+«EXPAND modelFile(currentNamespace) FOR this»
+«EXPAND controllerFile(currentNamespace) FOR this»
+«ENDDEFINE»
+
+«DEFINE modelFile (Namespace currentNamespace) FOR Classifier»
+«FILE "models/" + getQualifiedName("/") + ".php"»
+<?php
+«EXPAND PHP::standard::structure::Unit::start(currentNamespace, style()) FOR package»
+// model class for CakePHP
+class «name» extends AppModel {
+   var $name = '«name»';
+«FILE "indentRegion0_b4b21aa" buffer»
+«FOREACH (List[Property])getListAlias(attribute) AS attr»
+«IF attr.isNavigable() && !Interface.isInstance(this)»
+«EXPAND PHP::standard::Comment::comment FOR attr»
+«IF isLeaf»
+const «attr.name»«""»
+«ELSE»
+«attr.visibilityString()» «IF attr.isStatic»static «ENDIF»$«attr.name»«""»
+«ENDIF»
+«IF attr.^default!=null» = «attr.^default»«ENDIF»;
+
+«ENDIF»
+«ENDFOREACH»
+«ENDFILE»
+«getGlobalVar("indentRegion0_b4b21aa").indentWithRanges("   ")»
+ 
+}
+«IF getBooleanAlias(true)»?>«ENDIF»
+«ENDFILE»
+«ENDDEFINE»
+
+«DEFINE controllerFile(Namespace currentNamespace) FOR Classifier»
+«FILE "controllers/"+getQualifiedName("/") + "s_controller.php"»
+<?php
+«EXPAND PHP::standard::structure::Unit::start(currentNamespace, style()) FOR package»
+// controller class for CakePHP
+class «name»Controller extends AppController {
+   var $name = '«name»s';
+
+«FILE "indentRegion1_b4b21aa" buffer»
+«FOREACH (List[Operation])getListAlias(getAllOperations()) AS operation»
+«EXPAND PHP::standard::structure::Operation::operation(this, operation.style(), null) FOR operation»
+«ENDFOREACH»
+«ENDFILE»
+«getGlobalVar("indentRegion1_b4b21aa").indentWithRanges("   ")»
+
+}
+«IF getBooleanAlias(true)»?>«ENDIF»
+«ENDFILE»
+«ENDDEFINE»

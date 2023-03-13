@@ -1,0 +1,11 @@
+package board;
+
+public class Player{
+	
+	public Conditions p;
+	
+	public Player() {
+		p=empty;
+	}
+}
+

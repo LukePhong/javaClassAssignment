@@ -1,0 +1,19 @@
+package board;
+
+import java.util.*;
+
+class Position{
+	
+	public int[] pos;
+}
+
+class Player{
+	
+	public final int player_wight=0;
+	public final int player_black=1;
+}
+
+public class BoardBuffer {
+	
+	public Map<Position,Player> board=new HashMap<Position,Player>();
+}

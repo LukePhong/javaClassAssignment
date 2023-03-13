@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<qualifiedTypeNameHistroy>
+    <fullyQualifiedTypeName name="java.security.PublicKey"/>
+    <fullyQualifiedTypeName name="mapper.Map"/>
+    <fullyQualifiedTypeName name="control.Controller"/>
+    <fullyQualifiedTypeName name="mapper.BoardMap"/>
+    <fullyQualifiedTypeName name="board.Position"/>
+    <fullyQualifiedTypeName name="java.nio.Buffer"/>
+    <fullyQualifiedTypeName name="java.util.Map"/>
+    <fullyQualifiedTypeName name="board.Player"/>
+    <fullyQualifiedTypeName name="board.Conditions"/>
+</qualifiedTypeNameHistroy>

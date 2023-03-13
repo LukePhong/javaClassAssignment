@@ -1,0 +1,36 @@
+package mapper;
+
+import board.*;
+import util.Event;
+import util.ExchangeCommands;
+
+
+public class BoardMap {
+	private static BoardBuffer buff=new BoardBuffer();
+	//public BoardMap mapbuffer=new BoardMap();
+	private static Event lastPosEvent;
+	
+	public static Object handleEvent(ExchangeCommands x,Event e) {
+		
+		return EventProcess.processExchangeCommand(x,e);
+	}
+	
+	public boolean insert(Position p) {
+		
+		return true;
+	}
+
+
+	public BoardBuffer get() {
+		
+		return buff;
+	}
+
+
+	public static Player find(Position tmpPos) {
+		
+		return buff.get(tmpPos);
+	};
+	
+	
+}

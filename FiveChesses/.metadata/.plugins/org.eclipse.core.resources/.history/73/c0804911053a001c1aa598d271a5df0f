@@ -1,0 +1,27 @@
+package mapper;
+
+import control.Controller;
+import util.*;
+
+public abstract class MMethods implements Processor{
+	
+}
+
+class hQuit extends MMethods{
+	
+	@Override
+	public Object process(Object e) {
+		System.out.println("Quiting");
+		return e;
+	}
+}
+
+class hPutChess extends MMethods{
+	
+	@Override
+	public Object process(Object e) {
+		System.out.println("putchess");
+		
+		return e;
+	}
+}

@@ -1,0 +1,232 @@
+«EXTENSION Utility»
+«IMPORT uml»
+
+«IMPORT UMLLabProfile»
+«IMPORT Persistency»
+
+«EXTENSION java::jpa1::classDiag::classifier::DTOUtility»
+«EXTENSION java::jpa1::classDiag::assoc::AssociationExtensions»
+«EXTENSION java::standard::classDiag::assoc::AssociationExtensions»
+«EXTENSION java::standard::classDiag::property::AttributeExtensions»
+«EXTENSION java::standard::classDiag::classifier::ClassifierExtensions»
+
+«DEFINE dtoDecl FOR TransferableElement»
+«IF !hasKeyword("noDtoAccessor")»
+«EXPAND dtoAccessor("DTO")»
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE fastdtoDecl FOR TransferableElement»
+«IF !hasKeyword("noFastdtoAccessor")»
+«EXPAND dtoAccessor("FastDTO")»
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE dtoAccessor(String type) FOR TransferableElement»
+«LET getDtoClsName(type) AS clsName»
+«LET getBooleanAlias(false) AS withGenerics»
+«LET true AS omitSeperatorOnEmptyIteration»
+«FOREACH getIntListAlias(0.upTo(2)) AS groupCounter0»
+«IF groupCounter0 == 0»
+«IF getSuperClass() != null && getBooleanAlias(true)»
+@Override
+«ENDIF»
+«ELSEIF groupCounter0 == 1»
+@Transient
+«ELSEIF groupCounter0 == 2»
+«IF !withGenerics»
+@SuppressWarnings("unchecked")
+«ENDIF»
+«ENDIF»
+«ENDFOREACH»
+«ENDLET»
+«getWordAlias("public")» Class«IF withGenerics»<«clsName»>«ENDIF» get«type»Class() {
+   return «clsName».class;
+«addImport("javax.persistence.Transient")»
+}
+«REM»«addImport(getDtoName(this, type, true, true))» (fettes)TODO: Imports beim Reverse analysieren (Abweichungen im Micromata-Code)«ENDREM»
+«ENDLET»
+«ENDLET»
+«ENDDEFINE»
+
+«DEFINE supplementalFiles(JPA1StyledElement style) FOR TransferableElement»
+«IF this.generateDTO»
+«EXPAND supplementalFile("DTO") FOR this»
+«ENDIF»
+«REM» disabled FastDTO generation for now, as they contain the very same code as the DTOs
+«IF this.generateFastDTO»
+«EXPAND supplementalFile("FastDTO") FOR this»
+«ENDIF»
+«ENDREM»
+«ENDDEFINE»
+
+«DEFINE supplementalFile(String filekind) FOR TransferableElement»
+«scopeEnter()»
+«FILE getFQDtoFileName(filekind)»
+«LET getDtoPackage(filekind, ".") AS pkgName»
+«IF pkgName != null»
+package «pkgName»;
+«ENDIF»
+«ENDLET»
+
+«FILE "deferImports" defer»
+«FOREACH scopeGetImports() AS e»
+import «e»;
+«ENDFOREACH»
+«scopeLeave()»
+«ENDFILE»
+
+public class «getDtoClsName(filekind)»«""-»
+«IF  getSuperClass() != null && TransferableElement.isInstance(getSuperClass())»
+ extends «getDtoClsName(getSuperClass(), filekind)» «""-»
+«addImport(getFQDtoName(getSuperClass(), filekind))» 
+«ENDIF»
+ {
+«FILE "indentRegion0_1075944e" buffer»
+«EXPAND dtoPropConstructor(filekind) FOR this»
+«EXPAND dtoTemplateConstructor(filekind) FOR this»
+«LET getDtoProperties(filekind) AS dtoProperties» 
+«FOREACH (List[MemberFragmentTuple]) getListAlias(getListOfMemberFragmentTuple()) AS fragment»
+«IF dtoProperties.contains(fragment.element)»
+«LET (Property)fragment.element AS prop»
+«EXPAND dtoProperty(this, fragment, filekind) FOR prop»
+«ENDLET»
+«ENDIF»
+«ENDFOREACH»
+«ENDLET»
+«ENDFILE»
+«getGlobalVar("indentRegion0_1075944e").indentWithRanges("   ")»
+}
+«ENDFILE»
+«ENDDEFINE»
+
+«DEFINE dtoProperty(Classifier parent, MemberFragmentTuple fragment, String filekind) FOR Property»
+«IF fragment.partId == 0»
+«EXPAND dtoPropertyDecl(parent, filekind) FOR this»
+«ELSEIF fragment.partId == 1»
+«EXPAND dtoPropertySetter(parent, filekind) FOR this»
+«ELSEIF fragment.partId == 2»
+«EXPAND dtoPropertyGetter(parent, filekind) FOR this»
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE dtoPropertyDecl(Classifier parent, String filekind) FOR Property»
+private «EXPAND container(filekind) FOR this» «IF isMultivalued()»«pluralizeIfNeeded()»«ELSE»«name»«ENDIF»;
+«ENDDEFINE»
+
+«DEFINE dtoPropertySetter(Classifier parent, String filekind) FOR Property»
+«LET getWordAlias(name+"s") AS localVar»
+«visibilityString()» void set«methodSuffix()»(«IF getBooleanAlias(false)»final «ENDIF»«EXPAND container(filekind) FOR this» «IF isMultivalued()»«localVar»«ELSE»«name»«ENDIF») «""-»
+«IF isMultivalued()»
+{
+   «IF getBooleanAlias(true)»this.«ENDIF»«pluralizeIfNeeded()» = «localVar»;
+}
+«ELSE»
+{
+   this.«name» = «name»;
+}
+«ENDIF»
+«ENDLET»
+
+«ENDDEFINE»
+
+«DEFINE dtoPropertyGetter(Classifier parent, String filekind) FOR Property»
+«visibilityString()» «""-»
+«EXPAND container(filekind) FOR this» get«methodSuffix()»() «""-»
+{
+«IF isMultivalued()»
+«IF getBooleanAlias(true)»
+   if («IF getBooleanAlias(true)»this.«ENDIF»«pluralizeIfNeeded()» == null) {    
+   «IF getBooleanAlias(true)»this.«ENDIF»«pluralizeIfNeeded()» = new «EXPAND defaultContainer(filekind) FOR this» ();
+   }
+   return «IF getBooleanAlias(true)»this.«ENDIF»«pluralizeIfNeeded()»;
+«ENDIF»
+«ELSE»
+   return «IF getBooleanAlias(true)»this.«ENDIF»«name»;
+«ENDIF»
+}
+
+«ENDDEFINE»
+
+«DEFINE dtoPropConstructor(String filekind) FOR TransferableElement»
+«LET getAllDtoProperties(filekind) AS props»
+«LET getDtoProperties(filekind) AS localprops»
+public «getDtoClsName(filekind)» ( «""-»
+«FOREACH props AS prop SEPARATOR ", "»
+«EXPAND container(filekind) FOR prop» «prop.name»
+«ENDFOREACH»
+) {
+«IF getSuperClass() != null»
+   super(«FOREACH props.reject(p | localprops.contains(p)) AS superProp SEPARATOR ", "»«superProp.name»«ENDFOREACH»);
+   
+«ENDIF»
+«FOREACH props.select(p | ownedElement.contains(p)) AS localProp»
+   this.«localProp.name» = «localProp.name»;
+«ENDFOREACH»   
+}
+«ENDLET»
+«ENDLET»
+«ENDDEFINE»
+
+«DEFINE dtoTemplateConstructor(String filekind) FOR TransferableElement»
+«LET getDtoProperties(filekind) AS localprops»
+public «getDtoClsName(filekind)» ( «getDtoClsName(filekind)» template ) {
+«IF getSuperClass() != null»   
+   super(template);
+«ENDIF»   
+«FOREACH localprops AS localProp»
+   this.«localProp.name» = template.«localProp.name»;
+«ENDFOREACH»    
+}
+«ENDLET»
+«ENDDEFINE»
+
+«DEFINE container(String filekind) FOR Property»
+«IF isMultivalued()»
+«IF isOrdered»
+«addImport("java.util.List")»
+List <«EXPAND containeeType(filekind) FOR this»>«""-»
+«ELSEIF isQualified()»
+«addImport("java.util.Map")»
+Map <«getQualifier().type.name», «EXPAND containeeType(filekind) FOR this»>«""-»
+«ELSE»
+«addImport("java.util.Set")»
+Set <«EXPAND containeeType(filekind) FOR this»>«""-»
+«ENDIF»
+«ELSE»
+«EXPAND containeeType(filekind) FOR this»
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE defaultContainer(String filekind) FOR Property»
+«IF isOrdered»
+«addImport("java.util.ArrayList")»
+ArrayList <«EXPAND containeeType(filekind) FOR this»>«""-»
+«ELSEIF isQualified()»
+«addImport("java.util.HashMap")»
+HashMap <«getQualifier().type.name», «EXPAND containeeType(filekind) FOR this»>«""-»
+«ELSE»
+«addImport("java.util.HashSet")»
+HashSet <«EXPAND containeeType(filekind) FOR this»>«""-»
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE containeeType(String filekind) FOR Property»
+«REM» Use boxtypes for primitives «ENDREM»
+«IF isMultivalued() && isPrimitive(type)»
+«IF type.name=="int"»Integer«""-»
+«ELSEIF type.name=="short"»Short«""-»
+«ELSEIF type.name=="long"»Long«""-»
+«ELSEIF type.name=="float"»Float«""-»
+«ELSEIF type.name=="double"»Double«""-»
+«ELSEIF type.name=="char"»Character«""-»
+«ELSEIF type.name=="boolean"»Boolean«""-»
+«ENDIF»
+«REM» Use DTO/FastDTO types for such elements «ENDREM»
+«ELSEIF TransferableElement.isInstance(type)»
+«type.getDtoClsName(filekind)»«""-»
+«addImport(type.getFQDtoName(filekind))»
+«ELSE»
+«type.name»«""-»
+«ENDIF»
+«ENDDEFINE»

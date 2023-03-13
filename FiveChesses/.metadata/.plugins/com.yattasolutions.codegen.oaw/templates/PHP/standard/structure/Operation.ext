@@ -1,0 +1,14 @@
+import uml;
+import UMLLabProfile;
+
+extension Utility reexport;
+
+// visibilities for operations public=""/protected/private
+String visibilityString(Operation this) :
+	switch (visibility) {
+		case VisibilityKind::public    : (if getBooleanAlias(true) then "public " else "")
+		case VisibilityKind::protected : "protected "
+		case VisibilityKind::^private  : "private "
+		default                        : "/*invalid visibility*/ "
+	};
+	

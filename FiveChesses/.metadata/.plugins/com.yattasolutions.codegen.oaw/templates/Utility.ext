@@ -1,0 +1,386 @@
+import uml;
+import UMLLabProfile;
+
+// @Deprecated: fix in tutorials, then remove!
+String typeString(Type type) :
+	JAVA com.yattasolutions.codegen.util.Utility.getTypeAsString(org.eclipse.uml2.uml.Type);
+
+String typeString(Type this, Object elemContext) :
+	if elemContext.getBooleanAlias(true) then
+		( 
+		// add import if not primitive
+		if 
+			!PrimitiveType.isInstance(this) 
+			&& 
+			this.package != null 
+			&& 
+			this.package.getQualifiedName(".") != "java.lang" /*FIXME hotfix for #1495 - ignore java.lang imports*/
+		then
+			(this.scopeAddImport() -> "")
+		else
+			("")
+		) 
+		+ this.name
+	else
+		this.package.getQualifiedName(".") + "." + this.name
+;
+
+isPrimitiveType(Type this, String primitiveTypeName) :
+	// hotfix for reasoning
+	/*this.getQualifiedName(".") == primitiveTypeName &&*/ this.name == primitiveTypeName
+;
+
+String camelToUpperCase(String text) :
+	JAVA com.yattasolutions.codegen.util.Utility.camelToUpperCase(java.lang.String);
+
+StyledElement style(Element element) :
+	element.getStyledElement(language());
+
+private StyledElement getStyledElement(Element element, String language) :
+	JAVA com.yattasolutions.codegen.util.Utility.getStyledElement(org.eclipse.uml2.uml.Element,java.lang.String);
+
+boolean hasInitializerName(Operation this) :
+	JAVA com.yattasolutions.codegen.util.Utility.hasInitializerName(org.eclipse.uml2.uml.Operation);
+
+private String indent(Object code, String indent, Object output) :
+	JAVA com.yattasolutions.codegen.oaw.util.Utility.indent2(java.lang.Object,java.lang.String,com.yattasolutions.codegen.oaw.extensions.WhitespacePreservingOutput);
+
+// needed for isPrimitive evaluation while parsing
+boolean isPrimitive(Type type) :
+	JAVA com.yattasolutions.codegen.util.Utility.isPrimitive(org.eclipse.uml2.uml.Type);
+
+String getQualifiedName(NamedElement element, String separator) :
+	JAVA com.yattasolutions.codegen.util.Utility.getQualifiedName(org.eclipse.uml2.uml.NamedElement,java.lang.String);
+
+String getQualifiedName(NamedElement element, String separator, Integer minSegmentCount) :
+	JAVA com.yattasolutions.codegen.util.Utility.getQualifiedName(org.eclipse.uml2.uml.NamedElement,java.lang.String,java.lang.Integer);
+
+/**
+ * Return the body of the operation for the current language.
+ */
+String getBody(Operation operation) :
+	getBody(operation, language());
+
+private String getBody(Operation operation, String language) :
+	JAVA com.yattasolutions.codegen.util.Utility.getBody(org.eclipse.uml2.uml.Operation, java.lang.String);
+
+/**
+ * Return the body of the behavior for the current language.
+ */
+String getBody(OpaqueBehavior behavior) :
+	behavior.getBody(language());
+
+private String getBody(OpaqueBehavior behavior, String language) :
+	JAVA com.yattasolutions.codegen.util.Utility.getBody(org.eclipse.uml2.uml.OpaqueBehavior, java.lang.String);
+
+Generalization getGeneralization(Classifier cls) :
+	JAVA com.yattasolutions.codegen.util.Utility.getGeneralization(org.eclipse.uml2.uml.Classifier);
+
+// TODO causes problems with deletion
+/*Generalization getGeneralization(Classifier this) :
+	if this.generalization.isEmpty then
+		null
+	else
+		(Generalization) this.generalization.fromSingleton();*/
+
+Class getSuperClass(Classifier cls) :
+    if getGeneralization(cls) != null then 
+       getGeneralization(cls).general
+    else
+       null;
+
+Collection[DirectedRelationship] getInterfaces(Classifier cls) :
+	JAVA com.yattasolutions.codegen.util.Utility.getInterfaces(org.eclipse.uml2.uml.Classifier);
+// TODO replace when parser supports this #1285
+/*List[DirectedRelationship] getInterfaces(Classifier this) :
+	if Class.isInstance(this) then
+		((Class) this).interfaceRealization
+	else if Interface.isInstance(cls) || Enumeration.isInstance(cls) then
+		generalization
+	else
+		{};*/
+
+String pluralize (String name) :
+	JAVA com.yattasolutions.codegen.util.Utility.pluralize(java.lang.String);
+
+String getDefaultAsString (Type type) :
+	if type == null then
+		"null"	//No type specified
+	else if PrimitiveType.isInstance(type) then
+	(
+		if type.name=="int" then "0"
+		else if type.name=="short" then "0"
+		else if type.name=="long" then "0"
+		else if type.name=="float" then "0.0f"
+		else if type.name=="double" then "0.0d"
+		else if type.name=="char" then "null"
+		else if type.name=="boolean" then "false"
+		else if type.name=="String" then "null"
+		else if type.name=="byte" then "0"
+		else "null"	//unsupported primitive type
+	)
+	else
+		"null"
+;
+
+List[MemberFragmentTuple] getListOfMemberFragmentTuple(Classifier class) :
+	getListOfMemberFragmentTuple(class, language());
+
+private List[MemberFragmentTuple] getListOfMemberFragmentTuple(Classifier class, String language) :
+	JAVA com.yattasolutions.codegen.util.Utility.getListOfMemberFragmentTuple(org.eclipse.uml2.uml.Classifier, java.lang.String);
+
+List[Element] getMembers (Classifier clazz) :
+	JAVA com.yattasolutions.codegen.util.Utility.getMembers(org.eclipse.uml2.uml.Classifier);
+
+List[Type] getAllOwnedTypes (Package _package) :
+	JAVA com.yattasolutions.codegen.util.Utility.getAllOwnedTypes(org.eclipse.uml2.uml.Package);
+
+private String getWordAlias (Element elem, String defaultValue, Object output) :
+    JAVA com.yattasolutions.codegen.oaw.util.Utility.getWordAlias(org.eclipse.emf.ecore.EObject, java.lang.String, com.yattasolutions.codegen.oaw.extensions.WhitespacePreservingOutput);
+
+private String getLineAlias (Element elem, String defaultValue, Object output) :
+    JAVA com.yattasolutions.codegen.oaw.util.Utility.getLineAlias(org.eclipse.emf.ecore.EObject, java.lang.String, com.yattasolutions.codegen.oaw.extensions.WhitespacePreservingOutput);
+
+private String getBlockAlias (Element elem, String defaultValue, Object output) :
+    JAVA com.yattasolutions.codegen.oaw.util.Utility.getBlockAlias(org.eclipse.emf.ecore.EObject, java.lang.String, com.yattasolutions.codegen.oaw.extensions.WhitespacePreservingOutput);
+
+private boolean getBooleanAlias (Object elem, boolean defaultValue, Object output) :
+    JAVA com.yattasolutions.codegen.oaw.util.Utility.getBooleanAlias(org.eclipse.emf.ecore.EObject, java.lang.Boolean, com.yattasolutions.codegen.oaw.extensions.WhitespacePreservingOutput);
+
+private List[Object] getListAlias (Object elem, Collection[Object] originalList, Object output) :
+	JAVA com.yattasolutions.codegen.oaw.util.Utility.getListAlias(org.eclipse.emf.ecore.EObject, java.util.Collection, com.yattasolutions.codegen.oaw.extensions.WhitespacePreservingOutput);
+
+private Object getRangeAlias (Element elem, String code, Object output) :
+	JAVA com.yattasolutions.codegen.oaw.util.Utility.getRangeAlias(org.eclipse.emf.ecore.EObject, java.lang.String, com.yattasolutions.codegen.oaw.extensions.WhitespacePreservingOutput);
+
+private Object getGlobalVar (String key, Object output) :
+	JAVA com.yattasolutions.codegen.oaw.util.Utility.getGlobalVar(java.lang.String, com.yattasolutions.codegen.oaw.extensions.WhitespacePreservingOutput);
+
+private Object storeGlobalVar (String key, Object value, Object output) :
+	JAVA com.yattasolutions.codegen.oaw.util.Utility.storeGlobalVar(java.lang.String, java.lang.Object, com.yattasolutions.codegen.oaw.extensions.WhitespacePreservingOutput);
+
+private Object removeGlobalVar (String key, Object output) :
+	JAVA com.yattasolutions.codegen.oaw.util.Utility.removeGlobalVar(java.lang.String, com.yattasolutions.codegen.oaw.extensions.WhitespacePreservingOutput);
+
+// TODO maybe use sets here
+Object getSetOfEObjects (Object obj1, Object obj2) :
+	JAVA com.yattasolutions.codegen.oaw.util.Utility.getSetOfEObjects(org.eclipse.emf.ecore.EObject, org.eclipse.emf.ecore.EObject);
+
+String optionalText( Element this, String text, boolean displayDefault ) :
+	if getBooleanAlias(displayDefault) then
+		text
+	else
+		""
+;
+
+String language() : GLOBALVAR language;
+
+private Object output() : GLOBALVAR output;
+
+String visibilityString(NamedElement this) :
+    visibilityString(visibility);
+
+String visibilityString(Element this, VisibilityKind visibility) :
+	if visibility==null then "/*missing visibility*/"
+	else switch (visibility) {
+		case VisibilityKind::^private : "private"
+		case VisibilityKind::public : "public"
+		case VisibilityKind::package : this.optionalText("/*package*/", true)
+		case VisibilityKind::protected : "protected"
+		default : "/*invalid visibility*/"
+	};
+
+String childVisibilityString(NamedElement this, Classifier parent) :
+	if Interface.isInstance(parent) && visibility == VisibilityKind::public then
+		optionalText("public", true)
+	else
+		visibilityString();
+
+String indent(Element elem, String code, String indent) :
+	getRangeAlias(elem, code, output()).indentWithRanges(indent);
+
+String indentWithRanges(Object code, String indent) :
+	indent(code, indent, output());
+
+String getWordAlias (Element elem, String defaultValue) :
+	getWordAlias(elem, defaultValue, output());
+	
+String getLineAlias (Element elem, String defaultValue) :
+	getLineAlias(elem, defaultValue, output());
+
+String getBlockAlias (Element elem, String defaultValue) :
+	getBlockAlias(elem, defaultValue, output());
+
+boolean getBooleanAlias (Object elem, boolean defaultValue) :
+	getBooleanAlias(elem, defaultValue, output());
+
+List[Integer] getIntListAlias (Object elem, Collection[Integer] originalList) :
+	(List[Integer]) getListAlias(elem, originalList, output());
+
+List[Object] getListAlias (Object elem, Collection[Object] originalList) :
+	getListAlias(elem, originalList, output());
+
+Void addImport(String importName) :
+    scopeAddImport(importName) -> null;
+
+Void addImportWithAlternatives(List[String] qualifiedNames, int chooser) :
+    scopeAddImportWithAlternatives(qualifiedNames, chooser) -> null;
+
+Object getGlobalVar(String key) :
+	getGlobalVar(key, output());
+
+Object storeGlobalVar(String key, Object value) :
+	storeGlobalVar(key, value, output());
+
+Object removeGlobalVar(String key) :
+	removeGlobalVar(key, output());
+	
+Object fromSingleton(Collection[Object] singletonCollection) :
+    JAVA com.yattasolutions.codegen.util.Utility.getFromSingleton(java.util.Collection);
+
+Collection[Classifier] getAllSuperTypes(Classifier cls) :
+   JAVA com.yattasolutions.codegen.util.Utility.getAllSuperTypes(org.eclipse.uml2.uml.Classifier);
+
+List[Classifier] getSuperClassifiers(Classifier cls) :
+   JAVA com.yattasolutions.codegen.util.Utility.getSuperClassifiers(org.eclipse.uml2.uml.Classifier);
+
+boolean isSibling(Property prop) :
+   JAVA com.yattasolutions.codegen.oaw.util.Utility.isSibling(org.eclipse.uml2.uml.Property);
+
+/**
+ * Allows to navigate an unidirectional reference backwards.
+ * @param element the target of the link
+ * @param property the property which references the target element
+ * @return a collection of objects referencing <code>element</code> with their <code>property</code>
+ */
+// TODO #2579 does not work with models copied by GenericModelMappingEngine, some bug with CrossReferenceAdapter
+//Collection[Object] backlink(Element element, xpand2::Property property) :
+//   JAVA com.yattasolutions.codegen.oaw.util.Utility.backlink(org.eclipse.emf.ecore.EObject, org.eclipse.xtend.typesystem.Property);
+    
+/**
+ * Query the qualified name of an NamedElement relative to a given current Namespace.<p>
+ * Example: for element named foo.bar.Test and currentNamespace named foo the returned name would be bar.Test<br>
+ * @return partially qualified name if element is child of a parent of currentNamespace; fully qualified name if not
+ */
+String getQualifiedName(NamedElement element, Namespace currentNamespace, String separator) :
+   JAVA com.yattasolutions.codegen.util.Utility.getQualifiedName(org.eclipse.uml2.uml.NamedElement,org.eclipse.uml2.uml.NamedElement,java.lang.String);
+/* TODO #1240
+   if element.namespace == null || element == currentNamespace || element.namespace == currentNamespace then element.name
+   else if currentNamespace.allNamespaces().contains(element) then element.name
+   else element.namespace.getQualifiedName(currentNamespace, separator) + separator + element.name;
+*/
+   
+/**
+ * Union of Classifier.general and BehavioredClassifier.implementedInterfaces.
+ */
+Collection[Classifier] generalAndInterfaces(Classifier cls) :
+   getSuperClassifiers(cls);
+   // TODO this can not be handled by model mapping
+   //if BehavioredClassifier.isInstance(cls) then cls.general.union(((BehavioredClassifier)cls).getImplementedInterfaces())
+   //else cls.general;
+   
+Void scopeEnter(Namespace namespace) :
+  namespace.scopeEnter(output());
+  
+Void scopeLeave(Namespace namespace) :
+   namespace.scopeLeave(output());
+   
+Void scopeAddImport(Package namespace) :
+   scopeAddImport(namespace, output());
+   
+Void scopeAddImport(Type type) :
+   scopeAddImport(type, output());
+   
+Void scopeAddImport(String qualifiedName) :
+   scopeAddImport(qualifiedName, output());
+
+Void scopeAddSDMImports(Operation operation) :
+   scopeAddSDMImports(operation, output());
+
+Void scopeAddImportWithAlternatives(List[String] qualifiedNames, int chooser) :
+   scopeAddImportWithAlternatives(qualifiedNames, chooser, output());
+   
+Void scopeAddAlias(Type namespace, String name) :
+   namespace.scopeAddAlias(name, output());
+
+private Void scopeEnter(Namespace namespace, Object output) :
+   JAVA com.yattasolutions.codegen.oaw.util.Utility.scopeEnter(org.eclipse.uml2.uml.Namespace, com.yattasolutions.codegen.oaw.extensions.WhitespacePreservingOutput);
+   
+private Void scopeLeave(Namespace namespace, Object output) :
+   JAVA com.yattasolutions.codegen.oaw.util.Utility.scopeLeave(org.eclipse.uml2.uml.Namespace, com.yattasolutions.codegen.oaw.extensions.WhitespacePreservingOutput);
+   
+private Void scopeAddImport(String qualifiedName, Object output) :
+   JAVA com.yattasolutions.codegen.oaw.util.Utility.scopeAddImport(java.lang.String, com.yattasolutions.codegen.oaw.extensions.WhitespacePreservingOutput);
+
+private Void scopeAddSDMImports(Operation operation, Object output) :
+   JAVA com.yattasolutions.codegen.oaw.util.Utility.scopeAddSDMImports(org.eclipse.uml2.uml.Operation, com.yattasolutions.codegen.oaw.extensions.WhitespacePreservingOutput);
+
+private Void scopeAddImportWithAlternatives(List[String] qualifiedNames, int chooser, Object output) :
+   JAVA com.yattasolutions.codegen.oaw.util.Utility.scopeAddImportWithAlternatives(java.util.List, java.lang.Integer, com.yattasolutions.codegen.oaw.extensions.WhitespacePreservingOutput);
+
+private Void scopeAddImport(Type type, Object output) :
+   JAVA com.yattasolutions.codegen.oaw.util.Utility.scopeAddImport(org.eclipse.uml2.uml.Type, com.yattasolutions.codegen.oaw.extensions.WhitespacePreservingOutput);
+      
+private Void scopeAddImport(Package namespace, Object output) :
+   JAVA com.yattasolutions.codegen.oaw.util.Utility.scopeAddImport(org.eclipse.uml2.uml.Package, com.yattasolutions.codegen.oaw.extensions.WhitespacePreservingOutput);
+   
+private Void scopeAddAlias(Type type, String name, Object output) :
+   JAVA com.yattasolutions.codegen.oaw.util.Utility.scopeAddAlias(org.eclipse.uml2.uml.Type, java.lang.String, com.yattasolutions.codegen.oaw.extensions.WhitespacePreservingOutput);
+
+/**
+ * EXPAND a definition and return the generated code as String value.
+ * @param templateName fully qualified template name (separated with ::)
+ * @param this the object that would have been behind the FOR keyword in an EXPAND statement
+ * @param params a List of parameters (e.g. {param1, param2})
+ */
+String expand(String templateName, Object target, List[Object] params) :
+   expand(templateName, target, params, output());
+   
+private String expand(String templateName, Object target, List[Object] params, Object output) :
+   JAVA com.yattasolutions.codegen.oaw.util.Utility.expand(java.lang.String, java.lang.Object, java.util.List, com.yattasolutions.codegen.oaw.extensions.WhitespacePreservingOutput);
+   
+String getNameSeparator() :
+   "."; //TODO: get this config from somewhere
+   
+String getPackageWildcard() :
+   ".*"; //TODO: get this config from somewhere
+   
+String nameInScope(NamedElement element) :
+   element.nameInScope(getNameSeparator(), false, false, output());
+   
+String nameInScope(NamedElement element, Boolean addImportIfPossible, Boolean partialQualificationPossible) :
+   element.nameInScope(getNameSeparator(), addImportIfPossible, partialQualificationPossible, output());
+
+private String nameInScope(NamedElement element, String separator, Boolean addImportIfPossible, Boolean partialQualificationPossible, Object output) :
+   JAVA com.yattasolutions.codegen.oaw.util.Utility.nameInScope(org.eclipse.uml2.uml.NamedElement, java.lang.String, java.lang.Boolean, java.lang.Boolean, com.yattasolutions.codegen.oaw.extensions.WhitespacePreservingOutput);
+   
+List[Object] scopeGetImports(Object key) :
+	scopeGetImports(key, getNameSeparator(), getPackageWildcard(), output());
+	
+List[String] scopeGetImports(Object key, String separator, String packageWildcard) :
+	scopeGetImports(key, separator, packageWildcard, output());
+
+String fail(String message) :
+   JAVA com.yattasolutions.codegen.util.Utility.fail(java.lang.String);
+
+private List[String] scopeGetImports(Object key, String separator, String packageWildcard, Object output) :
+   JAVA com.yattasolutions.codegen.oaw.util.Utility.scopeGetImports(org.eclipse.emf.ecore.EObject, java.lang.String, java.lang.String, com.yattasolutions.codegen.oaw.extensions.WhitespacePreservingOutput);
+   
+NamedElement getInheritedMember(Classifier cls, String name) :
+   JAVA com.yattasolutions.codegen.oaw.util.Utility.getInheritedMember(org.eclipse.uml2.uml.Classifier, java.lang.String);
+
+isReference(Element elem) :
+	Reference.isInstance(elem);
+
+boolean falseForReverseTrueForForward() :
+	JAVA com.yattasolutions.codegen.util.Utility.falseForReverseTrueForForward();
+
+List[Object] getAnnotationsJava (Element elem) :
+	JAVA com.yattasolutions.codegen.oaw.util.Utility.getAnnotations(org.eclipse.emf.ecore.EObject);
+
+List[int] getListAliasWithAnnotations (Element elem, int listAliasCount) :
+	(List[int])getListAlias(elem,getAnnotationsJava(elem).addAll(1.upTo(listAliasCount)));
+
+List[Object] getListAliasWithAnnotations (Element elem) :
+	getListAlias(elem,getAnnotationsJava(elem));
+   

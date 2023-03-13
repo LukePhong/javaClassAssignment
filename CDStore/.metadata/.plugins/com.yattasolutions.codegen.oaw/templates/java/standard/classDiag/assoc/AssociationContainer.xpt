@@ -1,0 +1,90 @@
+«EXTENSION Utility»
+«IMPORT uml»
+«IMPORT UMLLabProfile»
+
+«EXTENSION java::standard::classDiag::assoc::AssociationExtensions»
+
+«DEFINE container FOR MultiplicityElement»
+«IF hasKeyword("generic_container")»
+«addImport("java.util.Collection")»
+Collection<«EXPAND containeeType(((TypedElement)this).type) FOR this»>«""-»
+«ELSEIF isOrdered»
+«addImport("java.util.List")»
+List<«EXPAND containeeType(((TypedElement)this).type) FOR this»>«""-»
+«ELSEIF Property.isInstance(this) && ((Property)this).isQualified()»
+«LET (Property)this AS property»
+«addImport("java.util.Map")»
+«IF property.isMultivalued()»
+«addImport("java.util.Set")»
+Map<«EXPAND containeeType(property.getQualifier().type) FOR property.getQualifier()», Set<«EXPAND containeeType(property.type) FOR property»>>«""-»
+«ELSE»
+Map<«EXPAND containeeType(property.getQualifier().type) FOR property.getQualifier()», «EXPAND containeeType(property.type) FOR property»>«""-»
+«ENDIF»
+«ENDLET»
+«ELSEIF Property.isInstance(this) && ((Property)this).isSorted()»
+«addImport("java.util.SortedSet")»
+SortedSet<«EXPAND containeeType(((TypedElement)this).type) FOR this»>«""-»
+«ELSE»
+«addImport("java.util.Set")»
+Set<«EXPAND containeeType(((TypedElement)this).type) FOR this»>«""-»
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE container FOR Operation»
+«IF hasKeyword("generic_container")»
+«addImport("java.util.Collection")»
+Collection<«EXPAND containeeType(this.type) FOR this»>«""-»
+«ELSEIF isOrdered»
+«addImport("java.util.List")»
+List<«EXPAND containeeType(this.type) FOR this»>«""-»
+«ELSE»
+«addImport("java.util.Set")»
+Set<«EXPAND containeeType(this.type) FOR this»>«""-»
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE defaultContainer FOR Property»
+«IF isOrdered»
+«addImport("java.util.ArrayList")»
+ArrayList<«EXPAND containeeType(this.type) FOR this»>«""-»
+«ELSEIF isQualified()»
+«addImport("java.util.HashMap")»
+«IF isMultivalued()»
+«addImport("java.util.Set")»
+HashMap<«EXPAND containeeType(getQualifier().type) FOR getQualifier()», Set<«EXPAND containeeType(this.type) FOR this»>>«""-»
+«ELSE»
+HashMap<«EXPAND containeeType(getQualifier().type) FOR getQualifier()», «EXPAND containeeType(this.type) FOR this»>«""-»
+«ENDIF»
+«ELSEIF Property.isInstance(this) && ((Property)this).isSorted()»
+«addImport("java.util.TreeSet")»
+TreeSet<«EXPAND containeeType(this.type) FOR this»>«""-»
+«ELSE»
+«addImport("java.util.HashSet")»
+HashSet<«EXPAND containeeType(this.type) FOR this»>«""-»
+«ENDIF»
+«ENDDEFINE»
+
+
+«REM» @visibility private «ENDREM»
+«DEFINE containeeType(Type type) FOR Element»
+«IF type == null»
+String/*No type specified*/«""-»
+«ELSE»
+«REM» Use boxtypes for primitives «ENDREM»
+«IF isPrimitive(type)»
+«IF type.name=="int" || (falseForReverseTrueForForward() && type.name=="Integer")»Integer«""-»
+«ELSEIF type.name=="short" || (falseForReverseTrueForForward() && type.name=="Short")»Short«""-»
+«ELSEIF type.name=="long" || (falseForReverseTrueForForward() && type.name=="Long")»Long«""-»
+«ELSEIF type.name=="float" || (falseForReverseTrueForForward() && type.name=="Float")»Float«""-»
+«ELSEIF type.name=="double" || (falseForReverseTrueForForward() && type.name=="Double")»Double«""-»
+«ELSEIF type.name=="char" || (falseForReverseTrueForForward() && type.name=="Character")»Character«""-»
+«ELSEIF type.name=="boolean" || (falseForReverseTrueForForward() && type.name=="Boolean")»Boolean«""-»
+«ELSEIF type.name=="String"»String«""-»
+«ELSEIF type.name=="byte" || (falseForReverseTrueForForward() && type.name=="Byte")»Byte«""-»
+«ELSE»«fail("unsupported primitive type: '"+type.name+"'")»«""-»
+«ENDIF»
+«ELSE»
+«EXPAND java::standard::Type::type(this) FOR type-»
+«ENDIF»
+«ENDIF»
+«ENDDEFINE»

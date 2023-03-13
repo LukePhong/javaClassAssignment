@@ -1,0 +1,24 @@
+package view;
+
+import util.Event;
+import util.Factory;
+
+public abstract class VFactoty extends Factory{
+	
+}
+
+class PQuit extends VFactoty{
+	
+	@Override
+	public Event produce() {
+		return new Quit();
+	}
+}
+
+class PWrongCommand extends VFactoty{
+	
+	@Override
+	public Event produce() {
+		return new WrongCommand();
+	}
+}

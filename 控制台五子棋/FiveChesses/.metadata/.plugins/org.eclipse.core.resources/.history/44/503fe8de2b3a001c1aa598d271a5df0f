@@ -1,0 +1,45 @@
+package control;
+
+import control.Controller;
+import mapper.BoardMap;
+import util.*;
+
+public abstract class CMethods implements Processor{
+	
+}
+
+class hQuit extends CMethods{
+	
+	@Override
+	public Object process(Object e) {
+		System.out.println("Quiting");
+		return e;
+	}
+}
+
+class hPutChess extends CMethods{
+	
+	@Override
+	public Object process(Object e) {
+		//System.out.println("putchess");
+		
+		BoardMap.handleEvent(ExchangeCommands.PUTCHESS,(Event)e);
+		
+		EventProcess.processExchangeCommand(ExchangeCommands.WinCheck, new WinCheck());
+		
+		return e;
+	}
+}
+
+class hWinCheck extends CMethods{
+	
+	@Override
+	public Object process(Object e) {
+		
+		boolean b=isWon();
+		WinCheck winCheck=(WinCheck)e;
+		winCheck.set(b);
+		
+		return winCheck;
+	}
+}

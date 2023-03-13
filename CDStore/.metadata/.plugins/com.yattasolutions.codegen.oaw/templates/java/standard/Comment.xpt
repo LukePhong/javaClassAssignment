@@ -1,0 +1,26 @@
+«IMPORT uml»
+
+«EXTENSION Utility»
+
+«REM»TODO #1205 Body should be indented with " * ", but does not work because first whitespace is added to start token.«ENDREM»
+«DEFINE comment FOR Element»
+«EXPAND comment("/**"," */") FOR this»
+«ENDDEFINE»
+
+«DEFINE comment(String start, String end) FOR Element»
+«IF !ownedComment.isEmpty»
+«start»
+«FOREACH ownedComment AS comment SEPARATOR " * ----------------------------------------------"»
+
+«comment.indent(comment.body, " * ")»
+
+«ENDFOREACH»
+«REM» TODO #1534«IF end.length != 0»
+«end»
+
+«ENDIF»
+«ENDREM»
+«end»
+
+«ENDIF»
+«ENDDEFINE»

@@ -1,0 +1,438 @@
+«EXTENSION Utility»
+«IMPORT uml»
+«IMPORT UMLLabProfile»
+«IMPORT Persistency»
+«IMPORT java::standard::classDiag::classifier»
+«IMPORT java::standard»
+
+«EXTENSION java::jpa1::classDiag::Annotations»
+«EXTENSION java::jpa1::classDiag::Utility»
+«EXTENSION java::jpa1::classDiag::property::AttributeExtensions»
+
+«EXTENSION java::standard::classDiag::classifier::ClassifierExtensions»
+
+«REM»Note: JPA Attributes can be neither static nor final!«ENDREM»
+«DEFINE attribute (JPA1StyledElement style,Classifier parent,MemberFragmentTuple fragment) FOR Property»
+«LET getWordAlias(defaultAnnotationStyle()) AS annotationStyle»
+«IF fragment.partId==0»
+«EXPAND attribute_FRG_Declaration(style, parent, annotationStyle) FOR this»
+«ELSEIF fragment.partId==1»
+«EXPAND attribute_FRG_Setter(style, parent, annotationStyle) FOR this»
+«ELSEIF fragment.partId==2»
+«EXPAND attribute_FRG_Getter(style, parent, annotationStyle) FOR this»
+«ENDIF»
+«ENDLET»
+«ENDDEFINE»
+
+«DEFINE attribute_FRG_Declaration(JPA1StyledElement style, Classifier parent, String annotationStyle)  FOR Property»
+«EXPAND File::import(type.style()) FOR type»
+«IF !isInterface(parent)»
+«EXPAND attributeAnnotations("field-access", annotationStyle) FOR this»
+«EXPAND java::jpa1::classDiag::Commons::attributeDeclarationAnnotations FOR this»
+private «IF isTransient() && ! getBooleanAlias(true)»transient «ENDIF»
+«EXPAND java::standard::Multiplicity::typedMultiplicityElement FOR this» «name»«IF ^default != null» = «^default»«ENDIF»;
+
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE attribute_FRG_Setter(JPA1StyledElement style, Classifier parent, String annotationStyle)  FOR Property»
+«EXPAND attributeAnnotations("property-access-setter", annotationStyle) FOR this»
+«LET getWordAlias("value") AS value»
+«LET getBooleanAlias(false) AS builderStyle»
+«visibilityString()» «IF isStatic»static «ENDIF»«IF !builderStyle»void«ELSE»«parent.typeString(this)»«ENDIF» set«name.methodSuffix()»(«IF getBooleanAlias(false)»final «ENDIF»«EXPAND java::standard::Multiplicity::typedMultiplicityElement FOR this» «value») «""-»
+«IF parent.isInterface()»
+;
+«ELSE»
+{
+«FILE "indentRegion0_3cfd2af5" buffer»
+«thisName(parent)» = «IF getBooleanAlias(false)»(«EXPAND Type::type(this) FOR type»)«ENDIF»«value»;
+«IF builderStyle»return this;«ENDIF»
+«ENDFILE»
+«getGlobalVar("indentRegion0_3cfd2af5").indentWithRanges("    ")»
+}
+«ENDIF»
+«ENDLET»
+«ENDLET»
+«ENDDEFINE»
+
+«DEFINE attribute_FRG_Getter(JPA1StyledElement style, Classifier parent, String annotationStyle)  FOR Property»
+«EXPAND attributeAnnotations("property-access-getter", annotationStyle) FOR this»
+«visibilityString()» «IF isStatic»static «ENDIF»«EXPAND java::standard::Multiplicity::typedMultiplicityElement FOR this» «IF type!=null && type.isPrimitiveType("boolean") && upper==1 && !isQualified()»is«ELSE»get«ENDIF»«name.methodSuffix()»() «""-»
+«IF parent.isInterface()»
+;
+«ELSE»
+{
+«FILE "indentRegion1_3cfd2af5" buffer»
+return «thisName(parent)»;
+«ENDFILE»
+«getGlobalVar("indentRegion1_3cfd2af5").indentWithRanges("    ")»
+}
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE attributeAnnotations(String annotationStyleName, String configuredAnnotationStyle) FOR Property»
+«IF generateAnnotations(annotationStyleName, configuredAnnotationStyle)»
+«LET true AS omitSeperatorOnEmptyIteration»
+«FOREACH getIntListAlias(0.upTo(22)) AS groupCounter3»
+«IF groupCounter3 == 0»
+«IF PrimaryKey.isInstance(this)»
+@Id
+«addImport("javax.persistence.Id")»
+«ENDIF»
+«ELSEIF groupCounter3 == 1»
+«IF Transient.isInstance(this) && getBooleanAlias(true)»
+@Transient
+«addImport("javax.persistence.Transient")»
+«ENDIF»
+«ELSEIF groupCounter3 == 2»
+«IF getAppliedStereotype("Persistency::Column") != null»
+«EXPAND column FOR (Column)this»
+«ENDIF»
+«ELSEIF groupCounter3 == 3»
+«IF getAppliedStereotype("Persistency::Version") != null»
+@Version
+«addImport("javax.persistence.Version")»
+«ENDIF»
+«ELSEIF groupCounter3 == 4»
+«IF getAppliedStereotype("Persistency::Lob") != null»
+@Lob
+«addImport("javax.persistence.Lob")»
+«ENDIF»
+«ELSEIF groupCounter3 == 5»
+«IF SequenceGenerator.isInstance(this)»
+«LET (SequenceGenerator)this AS generator»
+@SequenceGenerator(«""-»
+«LET true AS omitSeperatorOnEmptyIteration»
+«FOREACH getIntListAlias(0.upTo(3)) AS groupCounter0 SEPARATOR ", "»
+«IF groupCounter0 == 0»
+name="«generator.generatorName»"«""-»
+«ELSEIF groupCounter0 == 1»
+«IF !generator.sequenceName.empty()»
+sequenceName="«generator.sequenceName»"«""-»
+«ENDIF»
+«ELSEIF groupCounter0 == 2»
+«IF generator.initialValue != 1»
+initialValue=«generator.initialValue»«""-»
+«ENDIF»
+«ELSEIF groupCounter0 == 3»
+«IF generator.allocationSize != 50»
+allocationSize=«generator.allocationSize»«""-»
+«ENDIF»
+«ENDIF»
+«ENDFOREACH»
+«ENDLET»
+)
+«addImport("javax.persistence.SequenceGenerator")»
+«ENDLET»
+«ENDIF»
+«ELSEIF groupCounter3 == 6»
+«IF GeneratedValueMapping.isInstance(this)»
+«LET (GeneratedValueMapping)this AS generatedValueMapping»
+«LET getBooleanAlias(true) AS braces»
+@GeneratedValue«IF braces»(«ENDIF»«""»
+«LET true AS omitSeperatorOnEmptyIteration»
+«FOREACH getIntListAlias(0.upTo(1)) AS groupCounter1 SEPARATOR ","»
+«IF groupCounter1 == 0»
+«IF getBooleanAlias(false) || generatedValueMapping.strategy != GenerationType::AUTO»
+strategy=GenerationType.«generatedValueMapping.strategy.name»«""»
+«addImport("javax.persistence.GenerationType")»
+«ENDIF»
+«ELSEIF groupCounter1 == 1»
+«IF !generatedValueMapping.refGeneratorName.empty()»
+generator="«generatedValueMapping.refGeneratorName»"«""»
+«ELSEIF generatedValueMapping.generator != null»
+generator="«generatedValueMapping.generator.generatorName»"«""»
+«ENDIF»
+«ENDIF»
+«ENDFOREACH»
+«ENDLET»
+«IF braces»)«ENDIF»
+«ENDLET»
+«addImport("javax.persistence.GeneratedValue")»
+«ENDLET»
+«ENDIF»
+«ELSEIF groupCounter3 == 7»
+«IF (getBooleanAlias(false) || getAppliedStereotype("Persistency::FetchStrategy") != null)»
+@Basic«""-»
+«IF (getBooleanAlias(true) || getAppliedStereotype("Persistency::FetchStrategy") != null)»
+( «""-»
+«LET true AS omitSeperatorOnEmptyIteration»
+«FOREACH getIntListAlias(0.upTo(1)) AS groupCounter2 SEPARATOR ", "»
+«IF groupCounter2 == 0»
+«IF getAppliedStereotype("Persistency::FetchStrategy") != null»
+«LET (FetchStrategy)this AS fetchStrategy»
+fetch=FetchType.«fetchStrategy.strategy.name»
+«addImport("javax.persistence.FetchType")»
+«ENDLET»
+«ENDIF»
+«ELSEIF groupCounter2 == 1»
+«IF lower == 0»
+«IF getBooleanAlias(false)»
+optional=true«""-»
+«ENDIF»
+«ELSEIF lower == 1»
+optional=false«""-»
+«ELSE»
+optional=false /* lower=«lower» */«""-»
+«ENDIF»
+«ENDIF»
+«ENDFOREACH»
+«ENDLET»
+ )
+«ELSE»
+
+«ENDIF»
+«addImport("javax.persistence.Basic")»
+«ENDIF»
+«ELSEIF groupCounter3 == 8»
+«IF getAppliedStereotype("Persistency::EnumerationStyleMapping") != null»
+«LET (EnumerationStyleMapping)this AS enumerationStyleMapping»
+@Enumerated«""-»
+«IF ("ORDINAL"!=enumerationStyleMapping.style.name || getBooleanAlias(false))»
+(EnumType.«enumerationStyleMapping.style.name»)
+«addImport("javax.persistence.EnumType")»
+«ELSE»
+
+«ENDIF»
+«ENDLET»
+«addImport("javax.persistence.Enumerated")»
+«ENDIF»
+«ELSEIF groupCounter3 == 9»
+«IF AssertTrue.isInstance(this)»
+@AsserTrue
+«IF !((AssertTrue)this).assertTrueMessage.empty()»
+(message=«((AssertTrue)this).assertTrueMessage»)
+«ENDIF»
+«addImportWithAlternatives({"javax.validation.constraints.AssertTrue", "org.hibernate.validator.AssertTrue"})»
+«ENDIF»
+«IF AssertFalse.isInstance(this)»
+@AssertFalse
+«IF !((AssertFalse)this).assertFalseMessage.empty()»
+(message=«((AssertFalse)this).assertFalseMessage»)
+«ENDIF»
+«addImportWithAlternatives({"javax.validation.constraints.AssertFalse", "org.hibernate.validator.AssertFalse"})»
+«ENDIF»
+«ELSEIF groupCounter3 == 10»
+«IF Null.isInstance(this)»
+@Null
+«IF !((Null)this).nullMessage.empty()»
+(message=«((Null)this).nullMessage»)
+«ENDIF»
+«addImport("javax.validation.constraints.Null")»
+«ENDIF»
+«ELSEIF groupCounter3 == 11»
+«IF NotNull.isInstance(this)»
+@NotNull
+«IF !((NotNull)this).notNullMessage.empty()»
+(message=«((NotNull)this).notNullMessage»)
+«ENDIF»
+«addImportWithAlternatives({"javax.validation.constraints.NotNull", "org.hibernate.validator.NotNull"})»
+«ENDIF»
+«ELSEIF groupCounter3 == 12»
+«IF Future.isInstance(this)»
+@Future
+«IF !((Future)this).futureMessage.empty()»
+(message=«((Future)this).futureMessage»)
+«ENDIF»
+«addImportWithAlternatives({"javax.validation.constraints.Future", "org.hibernate.validator.Future"})»
+«ENDIF»
+«ELSEIF groupCounter3 == 13»
+«IF Past.isInstance(this)»
+@Past
+«IF !((Past)this).pastMessage.empty()»
+(message=«((Past)this).pastMessage»)
+«ENDIF»
+«addImportWithAlternatives({"javax.validation.constraints.Past", "org.hibernate.validator.Past"})»
+«ENDIF»
+«ELSEIF groupCounter3 == 14»
+«IF Valid.isInstance(this)»
+@Valid
+«addImportWithAlternatives({"javax.validation.constraints.Valid", "org.hibernate.validator.Valid"})»
+«ENDIF»
+«ELSEIF groupCounter3 == 15»
+«IF Pattern.isInstance(this)»
+«LET (Pattern)this AS pattern»
+@Pattern(«""-»
+«LET true AS omitSeperatorOnEmptyIteration»
+«FOREACH getIntListAlias(0.upTo(1)) AS groupCounter3 SEPARATOR ", "»
+«IF groupCounter3 == 0»
+regexp="«pattern.regexp»"«""-»
+«ELSEIF groupCounter3 == 1»
+«IF !pattern.patternMessage.empty()»
+message=«pattern.patternMessage»«""-»
+«ENDIF»
+«ENDIF»
+«ENDFOREACH»
+«ENDLET»
+)
+«addImportWithAlternatives({"javax.validation.constraints.Pattern", "org.hibernate.validator.Pattern"})»
+«ENDLET»
+«ENDIF»
+«ELSEIF groupCounter3 == 16»
+«IF Digits.isInstance(this)»
+«LET (Digits)this AS digits»
+@Digits(«""-»
+«LET true AS omitSeperatorOnEmptyIteration»
+«FOREACH getIntListAlias(0.upTo(2)) AS groupCounter4 SEPARATOR ", "»
+«IF groupCounter4 == 0»
+integer=«digits.integerDigits»«""-»
+«ELSEIF groupCounter4 == 1»
+fraction=«digits.fractionDigits»«""-»
+«ELSEIF groupCounter4 == 2»
+«IF !digits.digitsMessage.empty()»
+message=«digits.digitsMessage»«""-»
+«ENDIF»
+«ENDIF»
+«ENDFOREACH»
+«ENDLET»
+)
+«addImportWithAlternatives({"javax.validation.constraints.Digits", "org.hibernate.validator.Digits"})»
+«ENDLET»
+«ENDIF»
+«ELSEIF groupCounter3 == 17»
+«IF Min.isInstance(this)»
+«LET (Min)this AS min»
+@«IF min.useDecimalMin»Decimal«ENDIF»Min(«""-»
+«LET true AS omitSeperatorOnEmptyIteration»
+«FOREACH getIntListAlias(0.upTo(1)) AS groupCounter5 SEPARATOR ", "»
+«IF groupCounter5 == 0»
+value=«min.minValue»«""-»
+«ELSEIF groupCounter5 == 1»
+«IF !min.minMessage.empty()»
+message=«min.minMessage»«""-»
+«ENDIF»
+«ENDIF»
+«ENDFOREACH»
+«ENDLET»
+)
+«IF min.useDecimalMin»
+«addImport("javax.validation.constraints.DecimalMin")»
+«ELSE»
+«addImportWithAlternatives({"javax.validation.constraints.Min", "org.hibernate.validator.Min"})»
+«ENDIF»
+«ENDLET»
+«ENDIF»
+«ELSEIF groupCounter3 == 18»
+«IF Max.isInstance(this)»
+«LET (Max)this AS max»
+@«IF max.useDecimalMax»Decimal«ENDIF»Max(«""-»
+«LET true AS omitSeperatorOnEmptyIteration»
+«FOREACH getIntListAlias(0.upTo(1)) AS groupCounter6 SEPARATOR ", "»
+«IF groupCounter6 == 0»
+value=«max.maxValue»«""-»
+«ELSEIF groupCounter6 == 1»
+«IF !max.maxMessage.empty()»
+message=«max.maxMessage»«""-»
+«ENDIF»
+«ENDIF»
+«ENDFOREACH»
+«ENDLET»
+)
+«IF max.useDecimalMax»
+«addImport("javax.validation.constraints.DecimalMax")»
+«ELSE»
+«addImportWithAlternatives({"javax.validation.constraints.Max", "org.hibernate.validator.Max"})»
+«ENDIF»
+«ENDLET»
+«ENDIF»
+«ELSEIF groupCounter3 == 19»
+«IF Size.isInstance(this)»
+«LET (Size)this AS size»
+@Size(«""-»
+«LET true AS omitSeperatorOnEmptyIteration»
+«FOREACH getIntListAlias(0.upTo(2)) AS groupCounter7 SEPARATOR ", "»
+«IF groupCounter7 == 0»
+min=«size.min»«""-»
+«ELSEIF groupCounter7 == 1»
+max=«size.max»«""-»
+«ELSEIF groupCounter7 == 2»
+«IF !size.sizeMessage.empty()»
+message=«size.sizeMessage»«""-»
+«ENDIF»
+«ENDIF»
+«ENDFOREACH»
+«ENDLET»
+)
+«addImportWithAlternatives({"javax.validation.constraints.Size", "org.hibernate.validator.Size"})»
+«ENDLET»
+«ENDIF»
+«ELSEIF groupCounter3 == 20»
+«IF Email.isInstance(this)»
+@Email
+«IF !((Email)this).emailMessage.empty()»
+(message=«((Email)this).emailMessage»)
+«ENDIF»
+«addImport("org.hibernate.validator.constraints.Email")»
+«ENDIF»
+«ELSEIF groupCounter3 == 21»
+«IF NotEmpty.isInstance(this)»
+@NotEmpty
+«IF !((NotEmpty)this).notEmptyMessage.empty()»
+(message=«((NotEmpty)this).notEmptyMessage»)
+«ENDIF»
+«addImportWithAlternatives({"org.hibernate.validator.constraints.NotEmpty", "org.hibernate.validator.NotEmpty"})»
+«ENDIF»
+«ELSEIF groupCounter3 == 22»
+«IF Temporal.isInstance(this)»
+@Temporal(TemporalType.«((Temporal)this).temporalType.name»)
+«addImport("javax.persistence.Temporal")»
+«addImport("javax.persistence.TemporalType")»
+«ENDIF»
+«ENDIF»
+«ENDFOREACH»
+«ENDLET»
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE column FOR Column»
+@Column«IF getBooleanAlias(true)»( «""-»
+«LET true AS omitSeperatorOnEmptyIteration»
+«FOREACH getIntListAlias(0.upTo(9)) AS groupCounter4 SEPARATOR ", "»
+«IF groupCounter4 == 0»
+«IF ! this.label.empty()»
+name="«this.label»"«""-»
+«ENDIF»
+«ELSEIF groupCounter4 == 1»
+«IF this.unique»«REM»defaults to false«ENDREM»
+unique=«this.unique»
+«ENDIF»
+«ELSEIF groupCounter4 == 2»
+«IF !this.nullable || getBooleanAlias(false)»«REM»defaults to true, but allow explicit definintion (reverse)«ENDREM»
+nullable=«this.nullable»
+«ENDIF»
+«ELSEIF groupCounter4 == 3»
+«IF !this.insertable || getBooleanAlias(false)»«REM»defaults to true«ENDREM»
+insertable=«this.insertable»
+«ENDIF»
+«ELSEIF groupCounter4 == 4»
+«IF !this.updatable || getBooleanAlias(false)»«REM»defaults to true«ENDREM»
+updatable=«this.updatable»
+«ENDIF»
+«ELSEIF groupCounter4 == 5»
+«IF ! this.columnDefinition.empty()»
+columnDefinition="«this.columnDefinition»"
+«ENDIF»
+«ELSEIF groupCounter4 == 6»
+«IF ! this.table.empty()»
+table="«this.table»"
+«ENDIF»
+«ELSEIF groupCounter4 == 7»
+«IF this.length != "0" && (this.length != "255" || getBooleanAlias(false))»«REM»defaults to 255«ENDREM»
+length=«this.length»
+«ENDIF»
+«ELSEIF groupCounter4 == 8»
+«IF this.precision > 0 || getBooleanAlias(false)»«REM»the total number of digits, both to the left and to the right of the decimal point (defaults to 0)«ENDREM»
+precision=«this.precision»
+«ENDIF»
+«ELSEIF groupCounter4 == 9»
+«IF this.scale > 0 || getBooleanAlias(false)»«REM»number of digits of the fractional component (defaults to 0)«ENDREM»
+scale=«this.scale»
+«ENDIF»
+«ENDIF»
+«ENDFOREACH»
+«ENDLET»
+ )«ENDIF»
+ 
+«addImport("javax.persistence.Column")»
+«ENDDEFINE»
+

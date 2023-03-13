@@ -1,0 +1,62 @@
+«IMPORT uml»
+«IMPORT UMLLabProfile»
+
+«EXTENSION Utility»
+«EXTENSION PHP::standard::structure::Attribute»
+
+«DEFINE attribute (Classifier parent,StyledElement style,MemberFragmentTuple fragment) FOR Property»
+«IF fragment.partId==0»
+«EXPAND attribute_FRG_declaration(parent, style) FOR this»
+«ELSEIF fragment.partId==1»
+«EXPAND attribute_FRG_setter(parent, style) FOR this»
+«ELSEIF fragment.partId==2»
+«EXPAND attribute_FRG_getter(parent, style) FOR this»
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE attribute_FRG_declaration(Classifier parent, StyledElement style)  FOR Property»
+«IF !Interface.isInstance(parent)»
+«EXPAND PHP::standard::Comment::comment»
+«IF isLeaf»
+const «name»«""»
+«ELSE»
+private «IF this.isStatic»static «ENDIF»$«pluralizeIfNeeded()»«""»
+«ENDIF»
+«IF ^default!=null» = «^default»«ENDIF»;
+
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE attribute_FRG_setter(Classifier parent, StyledElement style)  FOR Property»
+«LET getWordAlias("value") AS value»
+«visibilityString(this)» «IF this.isStatic»static «ENDIF»function set«name.toFirstUpper()»(«EXPAND Type::phpType(parent)» $«value»)«""»
+«IF Interface.isInstance(namespace)»
+;
+«ELSE»
+ {
+«"   "»«EXPAND thisName(parent) FOR this» = $«value»;
+}
+«ENDIF»
+
+«ENDLET»
+«ENDDEFINE»
+
+«DEFINE attribute_FRG_getter(Classifier parent, StyledElement style)  FOR Property»
+«visibilityString(this)» «IF this.isStatic»static «ENDIF»function get«name.toFirstUpper()»()«""»
+«IF Interface.isInstance(parent)»
+;
+«ELSE»
+ {
+   return «EXPAND thisName(parent) FOR this»;
+}
+«ENDIF»
+
+«ENDDEFINE»
+
+«DEFINE thisName(Classifier parent) FOR Property»
+«IF !this.isStatic»
+$this->«pluralizeIfNeeded()»
+«ELSE»
+«EXPAND PHP::standard::structure::Unit::name(parent) FOR parent»->«pluralizeIfNeeded()»
+«ENDIF»
+«ENDDEFINE»

@@ -1,0 +1,30 @@
+package Interface;
+
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+
+import java.awt.*;
+
+
+public class Interface extends JFrame{
+	
+	public Interface(String title) {
+		super(title);
+		
+		JTextField numlineField=new JTextField("0");
+		JPanel butPanel=new JPanel();
+		this.add(BorderLayout.NORTH,numlineField);
+		this.add(BorderLayout.SOUTH,butPanel);
+		
+	}
+	
+	public static void main(String[] args) {
+		Interface startInterface=new Interface("Calculate");
+		startInterface.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		startInterface.setSize(200,200);
+		startInterface.setVisible(true);
+		
+	}
+}

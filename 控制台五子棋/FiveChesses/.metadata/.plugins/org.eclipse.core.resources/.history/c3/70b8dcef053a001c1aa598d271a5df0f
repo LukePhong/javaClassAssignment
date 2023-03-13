@@ -1,0 +1,17 @@
+package view;
+
+import util.Event;
+
+public class EventDeliver {
+	public static Object processCommand(String in) {
+		switch (in) {
+		case "Quit":
+			return VProcess.process(new hQuit(), new PQuit().produce());
+		case "PutChess":
+			return VProcess.process(new hPutChess(), new PPutChess().produce());
+
+		default:
+			return VProcess.process(new hWrongCommand(), new PWrongCommand().produce());
+		}
+	}
+}

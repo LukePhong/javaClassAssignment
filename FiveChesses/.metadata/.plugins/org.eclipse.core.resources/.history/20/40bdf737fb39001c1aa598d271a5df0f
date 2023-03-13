@@ -1,0 +1,25 @@
+package control;
+
+import util.Event;
+
+public abstract class VEvent extends Event{
+	
+}
+
+class Quit extends VEvent{
+	
+}
+
+class WrongCommand extends VEvent{}
+
+class Help extends VEvent{}
+
+class PutChess extends VEvent{
+	public int row;
+	public int col;
+	
+	PutChess(int r,int c){
+		row=r;
+		col=c;
+	}
+}

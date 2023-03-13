@@ -1,0 +1,8 @@
+package board;
+
+import java.util.*;
+
+public class BoardBuffer {
+	
+	public Map<Position,Player> board=new HashMap<Position,Player>();
+}

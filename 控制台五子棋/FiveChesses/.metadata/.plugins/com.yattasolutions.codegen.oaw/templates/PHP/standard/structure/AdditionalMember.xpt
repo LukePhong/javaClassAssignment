@@ -1,0 +1,20 @@
+«IMPORT uml»
+«IMPORT UMLLabProfile»
+
+«EXTENSION Utility»
+
+«DEFINE additionalMember(Classifier parent, StyledElement style, MemberFragmentTuple fragment)  FOR Classifier»
+«IF fragment.partId==0»
+«EXPAND additionalMember_FRG_Single(parent, style) FOR this»
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE additionalMember_FRG_Single(Classifier parent, StyledElement style)  FOR Classifier»
+«IF Enumeration.isInstance(parent)»
+/**
+ * Ensures that this class cannot be instantiated
+ */
+private function __construct(){
+}
+«ENDIF»
+«ENDDEFINE»

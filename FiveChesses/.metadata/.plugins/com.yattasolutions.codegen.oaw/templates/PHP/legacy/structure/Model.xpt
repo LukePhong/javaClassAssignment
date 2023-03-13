@@ -1,0 +1,13 @@
+«IMPORT uml»
+«IMPORT UMLLabProfile»
+
+«EXTENSION Utility»
+
+«REM»
+«DEFINE deployment(LegacyStyledElement style) FOR Deployment»
+«EXPAND Unit::unit FOR (DeploymentSpecification)fromSingleton(configuration)»
+«FOREACH configuration AS spec»
+«EXPAND Unit::unit FOR spec»
+«ENDFOREACH»
+«ENDDEFINE»
+«ENDREM»

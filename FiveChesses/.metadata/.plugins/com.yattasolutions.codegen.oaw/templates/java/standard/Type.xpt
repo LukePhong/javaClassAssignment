@@ -1,0 +1,83 @@
+«IMPORT uml»
+«IMPORT UMLLabProfile»
+
+«EXTENSION Utility»
+
+«REM»
+Generates a type name including Generics (since Java 5). Defaults to "void" if the type is null.
+@Visibility: Public
+«ENDREM»
+«DEFINE type(Element element) FOR Type»
+«EXPAND typeOrVoid(this) FOR element»
+«ENDDEFINE»
+
+«REM»
+Generates a type name for a given Relationhip including 
+Annotations (since Java 8) and Generics (since Java 5)
+@Visibility: Public
+«ENDREM»
+«DEFINE typeWithAnnotation(Relationship element) FOR Type»
+«FOREACH getListAlias(element, element.getAnnotationsJava()) AS annotation»
+«EXPAND java::legacy::classDiag::Annotation::annotation(null) FOR (Annotation) annotation»
+«ENDFOREACH»
+«EXPAND typeOrVoid(this) FOR element»
+«ENDDEFINE»
+
+«REM»
+Generates a type name including Generics (since Java 5). Defaults to "String" if the type is null.
+@Visibility: Public
+«ENDREM»
+«DEFINE typeOrDefault(Type type) FOR Element»
+«EXPAND type(type, "String/*No type specified*/") FOR this»
+«ENDDEFINE»
+
+«REM»
+Generates a type name including Generics (since Java 5). Defaults to "void" if the type is null.
+@Visibility: Public
+«ENDREM»
+«DEFINE typeOrVoid(Type type) FOR Element»
+«EXPAND type(type, "void") FOR this»
+«ENDDEFINE»
+
+«REM»
+Generates a type name including Generics (since Java 5).
+Defaults to the given defaultValue if the type is null.
+@Visibility: Public
+«ENDREM»
+«DEFINE type(Type type, String defaultValue) FOR Element»
+«IF type==null»«defaultValue»«ELSE»«type.typeString(this)»«ENDIF»
+«REM»
+«IF Classifier.isInstance(this)»
+«EXPAND genericDecl FOR (Classifier) this»
+«ENDIF»
+«ENDREM»
+«REM»«IF Generics.isInstance(element)» TODO does not work when this == null«ENDREM»
+«IF getAppliedStereotype("UMLLabProfile::Generics") != null»
+ <«((Generics) this).genericsValue»> «""-»
+«ENDIF»
+«ENDDEFINE»
+
+
+«REM»
+Currently not used.
+@Visibility: Private
+«ENDREM»
+«DEFINE genericDecl FOR TemplateableElement»
+«IF ownedTemplateSignature != null»
+ <«""-»
+«REM»TODO «((RedefinableTemplateSignature) ownedTemplateSignature).extendedSignature.parameter»«ENDREM»
+«FOREACH ownedTemplateSignature.parameter AS param SEPARATOR ", "»
+«LET (Classifier) param.parameteredElement AS class»
+«class.typeString(this)»
+«IF !class.general.isEmpty»
+ extends «""-»
+«REM»TODO interfaces«ENDREM»
+«FOREACH class.general AS superType SEPARATOR " & "»
+«superType.typeString(this)»
+«ENDFOREACH»
+«ENDIF»
+«ENDLET»
+«ENDFOREACH»
+>«""-»
+«ENDIF»
+«ENDDEFINE»

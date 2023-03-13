@@ -1,0 +1,236 @@
+«IMPORT uml»
+
+«IMPORT UMLLabProfile»
+«IMPORT Persistency»
+
+«EXTENSION Utility»
+«EXTENSION java::jpa1::classDiag::Utility»
+«EXTENSION java::standard::classDiag::classifier::ClassifierExtensions»
+
+«DEFINE primaryKeyJoinColumns FOR PrimaryKeyJoinColumns»
+«IF this.columns.size == 1»
+«EXPAND primaryKeyJoinColumn FOR (PrimaryKeyJoinColumn) columns.fromSingleton()»
+«ELSEIF this.columns.size != 0»
+@PrimaryKeyJoinColumns( { «EXPAND primaryKeyJoinColumn FOREACH this.columns SEPARATOR ", " » } )
+«addImport("javax.persistence.PrimaryKeyJoinColumns")»
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE primaryKeyJoinColumn FOR PrimaryKeyJoinColumn»
+@PrimaryKeyJoinColumn( «""-»
+«LET true AS omitSeperatorOnEmptyIteration»
+«FOREACH getIntListAlias(0.upTo(2)) AS counter SEPARATOR ", "»
+«IF counter == 0 && !label.empty()»
+name="«label»"«""-»
+«ELSEIF counter == 1 && referencedProperty != null»
+referencedColumnName="«referencedProperty.propertyName()»"«""-»
+«ELSEIF counter == 2 && !columnDefinition.empty()»
+columnDefinition="«columnDefinition»"«""-»
+«ENDIF»
+«ENDFOREACH»
+«ENDLET»
+ )
+«addImport("javax.persistence.PrimaryKeyJoinColumn")»
+«ENDDEFINE»
+
+«DEFINE uniqueConstraint FOR UniqueConstraint»
+@UniqueConstraint( «""»
+«LET true AS omitSeperatorOnEmptyIteration»
+«FOREACH getIntListAlias(0.upTo(1)) AS groupCounter3 SEPARATOR ", "»
+«IF groupCounter3 == 0»
+«IF !constrains.isEmpty»
+columnNames=«""-»
+«LET getBooleanAlias(false) || constrains.size > 1 AS brace»
+«IF brace»{ «ENDIF»
+«FOREACH constrains AS c SEPARATOR ", "»
+"«c.columnName()»"«""-»
+«ENDFOREACH»
+ «IF brace» }«ENDIF»
+«ENDLET»
+«ENDIF»
+«ELSEIF groupCounter3 == 1»
+«IF constraintName != null»
+name="«constraintName»"«""-»
+«ENDIF»
+«ENDIF»
+«ENDFOREACH»
+«ENDLET»
+)
+«addImport("javax.persistence.UniqueConstraint")»
+«ENDDEFINE»
+
+«DEFINE cached FOR Element»
+«IF getAppliedStereotype("Persistency::Cached") != null»
+«LET (Cached) this AS cache»
+«LET true AS omitSeperatorOnEmptyIteration»
+«IF cache !=  null»
+@Cache(«""-»
+«LET true AS omitSeperatorOnEmptyIteration»
+«FOREACH getIntListAlias(0.upTo(2)) AS groupCounter0 SEPARATOR ", "»
+«IF groupCounter0 == 0»
+usage=CacheConcurrencyStrategy.«cache.usage.name»
+«ELSEIF groupCounter0 == 1»
+«IF !cache.region.empty()»
+region="«cache.region»"«""-»
+«ENDIF»
+«ELSEIF groupCounter0 == 2»
+«REM»TODO use this«IF !cache.include.empty()»«ENDREM»«IF cache.include != null»
+include="«cache.include»"«""-»
+«ENDIF»
+«ENDIF»
+«ENDFOREACH»
+«ENDLET»
+)
+«addImport("org.hibernate.annotations.Cache")»
+«addImport("org.hibernate.annotations.CacheConcurrencyStrategy")»
+«ENDIF»
+«ENDLET»
+«ENDLET»
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE batch FOR Element»
+«IF getAppliedStereotype("Persistency::Batch") != null»
+«LET (Batch) this AS batch»
+@BatchSize( size=«batch.size» )
+«addImport("org.hibernate.annotations.BatchSize")»
+«ENDLET»
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE override FOR Overrides»
+«LET (Collection[Override]) getListAlias(this.overrides.select(o | Column.isInstance(o.anchor))) AS c_overrides»
+«IF c_overrides.size >= 1»
+«LET if c_overrides.size == 1 then getBooleanAlias(false) else true AS createOverrides»
+«IF createOverrides»
+@AttributeOverrides( {
+«addImport("javax.persistence.AttributeOverrides")»
+«ENDIF»
+«EXPAND attrOverrideAnnotation FOREACH c_overrides SEPARATOR ","»
+«addImport("javax.persistence.AttributeOverride")»
+«IF createOverrides»
+} )
+«ENDIF»
+«ENDLET»
+«ENDIF»
+«ENDLET»
+«LET (Collection[Override]) getListAlias(this.overrides.select(o | JoinColumns.isInstance(o.anchor))) AS j_overrides»
+«IF j_overrides.size >= 1»
+«LET if j_overrides.size == 1 then getBooleanAlias(false) else true AS createOverrides»
+«IF createOverrides»
+@AssociationOverrides( {
+«addImport("javax.persistence.AssociationOverrides")»
+«ENDIF»
+«EXPAND assocOverrideAnnotation FOREACH j_overrides SEPARATOR ","»
+«addImport("javax.persistence.AssociationOverride")»
+«IF createOverrides»
+} )
+«ENDIF»
+«ENDLET»
+«ENDIF»
+«ENDLET»
+«ENDDEFINE»
+
+«REM»private«ENDREM» «DEFINE attrOverrideAnnotation FOR Override»
+@AttributeOverride( name="«overridden.name»", column=«""-»
+«EXPAND java::jpa1::classDiag::property::Attribute::column FOR (Column)this.anchor»
+)«""-»
+«ENDDEFINE»
+
+«REM»private«ENDREM» «DEFINE assocOverrideAnnotation FOR Override»
+@AssociationOverride( name="«overridden.name»", joinColumns=«""-»
+«IF ((JoinColumns)this.anchor).columns.size == 0»
+{}
+«ELSE»
+«EXPAND java::jpa1::classDiag::assoc::Association::joinColumns FOR (JoinColumns)this.anchor»
+«ENDIF»
+)«""-»
+«ENDDEFINE»
+
+«DEFINE attributeDeclarationAnnotations FOR Property»
+«LET true AS omitSeperatorOnEmptyIteration»
+«FOREACH getIntListAlias(0.upTo(3)) AS groupCounter1»
+«IF groupCounter1 == 0»
+«IF Fields.isInstance(this)»
+«LET ((Fields)this).fields.size == 1 AS single»
+«IF single»
+«EXPAND field FOR (Field)((Fields)this).fields.fromSingleton()»
+
+«ELSE»«REM»TODO sind es hier definitiv immer mehr als eins? oder gehen auch 0 ?«ENDREM»
+@Fields( {
+«FOREACH ((Fields)this).fields AS f SEPARATOR ", "»
+«EXPAND field FOR f»
+«ENDFOREACH»
+ } )«""»
+«addImport("org.hibernate.search.annotations.Fields")»
+«ENDIF»
+«ENDLET»
+«ENDIF»
+«ELSEIF groupCounter1 == 1»
+«IF FieldBridge.isInstance(this)»
+«LET ((FieldBridge)this).implementation AS impl»
+@FieldBridge(impl=«EXPAND java::standard::Type::type(this) FOR impl».class)
+«addImport("org.hibernate.search.annotations.FieldBridge")»
+«ENDLET»
+«ENDIF»
+«ELSEIF groupCounter1 == 2»
+«IF DateBridge.isInstance(this)»
+@DateBridge(resolution=Resolution.«((DateBridge)this).resolution»)
+«addImport("org.hibernate.search.annotations.DateBridge")»
+«addImport("org.hibernate.search.annotations.Resolution")»
+«ENDIF»
+«ELSEIF groupCounter1 == 3»
+«IF Indexed.isInstance(this)»
+@IndexedEmbedded«""»
+«LET ((Indexed)this) AS i»
+«IF i.depth == -1 && getBooleanAlias(false)»
+(depth=Integer.MAX_VALUE)
+«ELSEIF i.depth != -1»
+(depth=«i.depth»)
+«ENDIF»
+«ENDLET»
+«ENDIF»
+«ENDIF»
+«ENDFOREACH»
+«ENDLET»
+«ENDDEFINE»
+
+«DEFINE field FOR Field»
+@Field(«""»
+«LET true AS omitSeperatorOnEmptyIteration»
+«FOREACH getIntListAlias(0.upTo(2)) AS groupCounter2 SEPARATOR ","»
+«IF groupCounter2 == 0»
+«IF index && tokenized»
+«IF getBooleanAlias(false)»
+index=Index.TOKENIZED
+«addImport("org.hibernate.search.annotations.Index")»
+«ENDIF»
+«ELSEIF index && !tokenized»
+index=Index.UN_TOKENIZED
+«addImport("org.hibernate.search.annotations.Index")»
+«ELSEIF !index || getBooleanAlias(false)»
+index=Index.NO
+«addImport("org.hibernate.search.annotations.Index")»
+«ELSE»
+encountered unreachable template alternative
+«ENDIF»
+«ELSEIF groupCounter2 == 1»
+«IF store»
+store=Store.YES
+«addImport("org.hibernate.search.annotations.Store")»
+«ELSE»
+«IF getBooleanAlias(false)»
+store=Store.NO
+«addImport("org.hibernate.search.annotations.Store")»
+«ENDIF»
+«ENDIF»
+«ELSEIF groupCounter2 == 2»
+«IF fieldLabel != null»
+name=«fieldLabel»
+«ENDIF»
+«ENDIF»
+«ENDFOREACH»
+«ENDLET»
+)«""»
+«addImport("org.hibernate.search.annotations.Field")»
+«ENDDEFINE»

@@ -1,0 +1,56 @@
+import uml;
+
+extension Utility reexport;
+extension java::standard::classDiag::property::AttributeExtensions;
+
+String getUpperString(Property this) :
+	if upper == -1 then
+		"*"
+	else
+		upper;
+
+isRef(Property this) :
+	!getOtherEnd().isNavigable();
+
+isQualified(Property this) :
+	!qualifier.isEmpty;
+
+Property getQualifier(Property this) :
+	if !isQualified() then
+		null
+	else
+		//TODO this supports a single qualifier only
+		(Property) qualifier.fromSingleton();
+
+
+pluralizeIfNeeded(Property this) :
+	if isMultivalued() && hasKeyword("pluralized") then
+		name.pluralize()
+	else
+		name;
+
+// TODO use pluralizeIfNeeded here
+methodSuffix(Property this) :
+	if isMultivalued() && hasKeyword("pluralized") then
+		name.pluralize().toFirstUpper()
+	else
+		name.methodSuffix();
+
+isOrdered(Property this) :
+	if isMultivalued() || isQualified() then
+		isOrdered
+	else
+		false;
+
+// TODO sorted/comparator #set( $comparator = $role.SortedComparator.trim() )
+isSorted(Property this) :
+	if isMultivalued() || isQualified() then
+		hasKeyword("sorted") // TODO isSorted()
+	else
+		false;
+
+getDirection(Property prop, Association assoc) :
+	if prop.getBooleanAlias(false) then "" else
+		if assoc.memberEnd.indexOf(prop) == 0 then "&lt;"
+		else if  assoc.memberEnd.indexOf(prop) == 1 then "&gt;"
+		else fail("Association seems to have more than two roles.");

@@ -1,0 +1,32 @@
+«IMPORT uml»
+«IMPORT UMLLabProfile»
+
+«EXTENSION Utility»
+
+«DEFINE phpType(Namespace namespace) FOR TypedElement»
+«IF getBooleanAlias(true)»
+«IF type!=null»
+«IF isPrimitive(type)»
+/*«EXPAND primitive FOR type»*/«""-»
+«ELSE»
+«REM»PHP5 supports "Type Hinting" for non-primitive types and arrays«ENDREM»
+«EXPAND Unit::name(namespace) FOR type»
+«ENDIF»
+«ENDIF»
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE primitive FOR Type»
+«IF this.name=="int"»int«""-»
+«ELSEIF this.name=="short"»Short«""-»
+«ELSEIF this.name=="long"»long«""-»
+«ELSEIF this.name=="float"»float«""-»
+«ELSEIF this.name=="double"»double«""-»
+«ELSEIF this.name=="char"»char«""-»
+«ELSEIF this.name=="boolean"»boolean«""-»
+«ELSEIF this.name=="String"»String«""-»
+«ELSEIF this.name=="byte"»byte«""-»
+«ELSEIF this.name=="Void"»void«""-»
+«ELSE»«fail("unsupported primitive type: '"+this.name+"'")»«""-»
+«ENDIF»
+«ENDDEFINE»

@@ -1,0 +1,6 @@
+import uml;
+
+extension Utility;
+
+String getAnnotationString(ValueSpecification value) :
+	JAVA com.yattasolutions.codegen.util.Utility.getAnnotationString(org.eclipse.uml2.uml.ValueSpecification);

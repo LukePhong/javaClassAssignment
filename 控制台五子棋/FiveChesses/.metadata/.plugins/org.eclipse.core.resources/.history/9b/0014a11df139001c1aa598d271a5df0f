@@ -1,0 +1,16 @@
+package view;
+
+import util.Event;
+import util.Processor;
+
+public abstract class VMethods implements Processor{
+	
+}
+
+class hQuit extends VMethods{
+	
+	@Override
+	public Event process(Event e) {
+		System.out.println("Quiting");
+	}
+}

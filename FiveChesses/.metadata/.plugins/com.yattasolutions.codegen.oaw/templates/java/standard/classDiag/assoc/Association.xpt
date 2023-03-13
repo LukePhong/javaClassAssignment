@@ -1,0 +1,130 @@
+«IMPORT uml»
+«IMPORT UMLLabProfile»
+
+«IMPORT java::standard::classDiag::assoc»
+«IMPORT java::standard::classDiag::classifier»
+
+«EXTENSION java::standard::classDiag::assoc::AssociationExtensions»
+«EXTENSION java::standard::classDiag::property::AttributeExtensions»
+«EXTENSION java::standard::classDiag::classifier::ClassifierExtensions»
+
+«DEFINE role(StyledElement style, Classifier parent, MemberFragmentTuple fragment) FOR Property»
+«LET fragment.partId AS partId»
+«IF partId == 0»
+«EXPAND roleDeclaration(style, parent) FOR this»
+«ELSEIF partId == 1»
+«EXPAND roleSetter(style, parent) FOR this»
+«ELSEIF partId == 2»
+«EXPAND roleGetter(style, parent) FOR this»
+«ENDIF»
+«ENDLET»
+«ENDDEFINE»
+
+«DEFINE roleDeclaration(StyledElement style, Classifier parent) FOR Property»
+«IF isPrimitive(this.type) && !isMultivalued()»«fail("need a complex type")»«ENDIF»
+«LET getOtherEnd() AS partnerRole»
+«LET getBooleanAlias(true) AS generateAssocComment»
+«IF generateAssocComment || association.ownedComment.size > 0 || partnerRole.ownedComment.size > 0»
+/**
+«IF generateAssocComment»
+ * <pre>
+ *           «partnerRole.lower»..«partnerRole.getUpperString()»     «association.name»     «lower»..«getUpperString()»
+
+ * «partnerRole.type.name» ------------------------«IF isRef()»>«ELSE»-«ENDIF» «type.name»
+
+ *           «partnerRole.name»        «getDirection(association)»       «name»
+
+ * </pre>
+«ENDIF»
+   «EXPAND java::standard::Comment::comment(" *"," *") FOR association»
+   «EXPAND java::standard::Comment::comment(" *"," *") FOR this»
+«REM»«EXPAND java::standard::Comment::comment(" *","") FOR association»
+«EXPAND java::standard::Comment::comment(" **<<comment on role>>","") FOR this»«ENDREM»
+ */
+«ENDIF»
+«ENDLET»
+«EXPAND File::import(style) FOR type»
+«IF isMultivalued() || isQualified()»
+«EXPAND toManyDeclaration(style, partnerRole, parent) FOR this»
+«ELSE»
+«EXPAND toOneDeclaration(style, partnerRole, parent) FOR this»
+«ENDIF»
+«ENDLET»
+«ENDDEFINE»
+
+«DEFINE roleSetter(StyledElement style, Classifier parent) FOR Property»
+«IF isPrimitive(this.type) && !isMultivalued()»«fail("need a complex type")»«ENDIF»
+«REM»do not generate access methods for qualified properties (currently not supported)«ENDREM»
+«IF !isMultivalued() && !isQualified()»
+«EXPAND toOneSetter(style, getOtherEnd(), parent) FOR this»
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE roleGetter(StyledElement style, Classifier parent) FOR Property»
+«IF isPrimitive(this.type) && !isMultivalued()»«fail("need a complex type")»«ENDIF»
+«IF isMultivalued() || isQualified()»
+«EXPAND toManyGetter(style, getOtherEnd(), parent) FOR this»
+«ELSE»
+«EXPAND toOneGetter(style, getOtherEnd(), parent) FOR this»
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE toOneDeclaration(StyledElement style, Property partnerRole, Classifier parent) FOR Property»
+«IF !parent.isInterface()»
+private «IF isStatic»static «ENDIF»«type.name» «name»;
+
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE toOneSetter(StyledElement style, Property partnerRole, Classifier parent) FOR Property»
+«LET getWordAlias("value") AS value»
+«visibilityString()» «IF isStatic»static «ENDIF»void set«methodSuffix()»(«IF getBooleanAlias(false)»final «ENDIF»«type.name» «value»)«""»
+«IF parent.isInterface()»
+;
+
+«ELSE»
+ {
+   «"   "»«thisName(parent)» = «value»;
+}
+
+«ENDIF»
+«ENDLET»
+«ENDDEFINE»
+
+«DEFINE toOneGetter(StyledElement style, Property partnerRole, Classifier parent) FOR Property»
+«visibilityString()» «IF isStatic»static «ENDIF»«type.name» get«methodSuffix()»()«""»
+«IF parent.isInterface()»
+;
+
+«ELSE»
+ {
+   return «thisName(parent)»;
+}
+
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE toManyDeclaration(StyledElement style, Property partnerRole, Classifier parent) FOR Property»
+«IF !parent.isInterface()»
+private «IF isStatic»static «ENDIF»«EXPAND AssociationContainer::container FOR this» «pluralizeIfNeeded()»;
+
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE toManyGetter(StyledElement style, Property partnerRole, Classifier parent) FOR Property»
+«visibilityString()» «IF isStatic»static «ENDIF»«EXPAND AssociationContainer::container FOR this» get«methodSuffix()»()«""»
+«IF parent.isInterface()»
+;
+
+«ELSE»
+ {
+«LET getOtherEnd().hasKeyword("pluralized") AS pluralized»
+   if («thisName(parent, pluralized)» == null) {
+«"      "»«thisName(parent, pluralized)» = new «EXPAND AssociationContainer::defaultContainer FOR this»();
+   }
+   return «thisName(parent, pluralized)»;
+«ENDLET»
+}
+
+«ENDIF»
+«ENDDEFINE»

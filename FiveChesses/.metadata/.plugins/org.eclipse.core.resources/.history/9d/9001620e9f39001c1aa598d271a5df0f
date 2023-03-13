@@ -1,0 +1,15 @@
+package view;
+
+import util.Event;
+
+public interface VMethods {
+	void handle(Object p);
+}
+
+class hQuit implements VMethods{
+	
+	@Override
+	public void handle(Event e) {
+		
+	}
+}

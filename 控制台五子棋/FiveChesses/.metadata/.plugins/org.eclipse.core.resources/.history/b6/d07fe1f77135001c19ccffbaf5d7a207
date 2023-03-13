@@ -1,0 +1,17 @@
+package mapper;
+
+import board.*;
+
+
+public class Map {
+	private BoardBuffer buff=new BoardBuffer();
+	public Map mapbuffer=new Map();
+	
+	
+	public boolean insert(Position p) {
+		
+		return true;
+	};
+	
+	
+}

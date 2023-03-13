@@ -1,0 +1,58 @@
+package control;
+
+import java.nio.Buffer;
+
+import control.Controller;
+import mapper.BoardMap;
+import util.*;
+
+public abstract class CMethods implements Processor{
+	
+}
+
+class hQuit extends CMethods{
+	
+	@Override
+	public Object process(Object e) {
+		System.out.println("Quiting");
+		return e;
+	}
+}
+
+class hPutChess extends CMethods{
+	
+	@Override
+	public Object process(Object e) {
+		//System.out.println("putchess");
+		
+		BoardMap.handleEvent(ExchangeCommands.PUTCHESS,(Event)e);
+		
+		WinCheck isWinCheck=(WinCheck)EventProcess.processExchangeCommand(ExchangeCommands.WinCheck, new WinCheck());
+		
+		return isWinCheck;
+	}
+}
+
+class hWinCheck extends CMethods{
+	
+	@Override
+	public Object process(Object e) {
+		
+		WinCheck winCheck=(WinCheck)e;
+		winCheck.set(WinChecking.isWon(Controller.mapbuffer.lastPosition()));
+		winCheck.setWinner(Controller.mapbuffer.LastPlayer());
+		
+		return winCheck;
+	}
+}
+
+class hRegret extends CMethods{
+	
+	@Override
+	public Object process(Object e) {
+		System.out.println("Regret One Step:");
+		
+		BoardMap.handleEvent(ExchangeCommands.REGRET,(Event)e);
+		return e;
+	}
+}

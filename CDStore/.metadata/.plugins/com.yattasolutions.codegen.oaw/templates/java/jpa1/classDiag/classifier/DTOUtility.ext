@@ -1,0 +1,47 @@
+import uml;
+import Persistency;
+
+extension java::jpa1::classDiag::Utility;
+extension Utility;
+
+String getDtoPackage(Type this, String kind, String separator) :
+   let packageName = package.getQualifiedName(separator) :
+      if( packageName != null ) then 
+      (
+         if( kind == "DTO" ) then
+            package.getQualifiedName(separator).replaceAll("entity","transfer")
+         else
+         (
+            if( kind == "FastDTO" ) then
+               package.getQualifiedName(separator).replaceAll("entity","transferfast")
+            else
+               package.getQualifiedName(separator)
+         )
+      )
+      else
+         ""
+;
+
+String getDtoClsName(Type this, String kind):
+   name + kind
+;
+
+getFQDtoName(Type this, String kind):
+   getDtoPackage(kind, ".") + "." + getDtoClsName(kind)
+;
+
+getFQDtoFileName(Type this, String kind):
+   getDtoPackage(kind, "/") + "/" + getDtoClsName(kind) + ".java"
+;
+
+List[Property] getDtoProperties(TransferableElement this, String kind):
+   let contributors = if "FastDTO"==kind then fastdtoContributors else dtoContributors : 
+      if contributors==null || contributors.isEmpty then 
+         attribute 
+      else 
+         contributors.intersect(attribute)
+;
+
+List[Property] getAllDtoProperties(TransferableElement this, String kind):
+   {this}.union(base_Classifier.getAllSuperTypes()).typeSelect(TransferableElement).getDtoProperties(kind)
+;

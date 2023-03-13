@@ -1,0 +1,55 @@
+«IMPORT uml»
+«IMPORT UMLLabProfile»
+
+«EXTENSION Utility»
+
+«DEFINE typeName FOR Type»
+«IF name=="String"»
+java.lang.String«""»
+«ELSE»
+«getQualifiedName(".")»«""»
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE arrayMultiplicity FOR MultiplicityElement»
+«IF upper==-1»
+«IF getBooleanAlias(false) && Parameter.isInstance(this)»...«ELSE»[]«ENDIF»
+«ELSE»
+«EXPAND array FOR this»
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE arrayMultiplicity FOR Operation»
+«IF upper==-1»
+«IF getBooleanAlias(false) && Parameter.isInstance(this)»...«ELSE»[]«ENDIF»
+«ELSE»
+«EXPAND array FOR this»
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE array FOR Element»
+«IF Array.isInstance(this) && ((Array)this).dimensions >= 2»
+«LET ((Array)this).dimensions AS dim»
+[][«""»
+«REM»TODO remove after #1479«ENDREM»
+«IF dim==2»
+]«""»
+«ELSEIF dim==3»
+][]«""»
+«ELSEIF dim==4»
+][][]«""»
+«ELSEIF dim==5»
+][][][]«""»
+«ELSEIF dim==6»
+][][][][]«""»
+«ELSE»
+/*unsupported-array-dimensions: «dim» */«""»
+«REM»
+«FOREACH 2.upTo(((Array)this).dimensions) AS i»
+[]«""»
+«ENDFOREACH»
+«ENDREM»
+«ENDIF»
+«ENDLET»
+«ENDIF»
+«ENDDEFINE»

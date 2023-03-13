@@ -1,0 +1,18 @@
+package util;
+
+import javax.sound.midi.VoiceStatus;
+
+import board.Conditions;
+
+public class WinCheck extends Event{
+		public boolean isWin;
+		public Conditions winner;
+		
+		public void set(boolean b) {
+			isWin=b;
+			winner=Conditions.empty;
+		}
+		public void setWinner(Conditions winner) {
+			this.winner = winner;
+		}
+}

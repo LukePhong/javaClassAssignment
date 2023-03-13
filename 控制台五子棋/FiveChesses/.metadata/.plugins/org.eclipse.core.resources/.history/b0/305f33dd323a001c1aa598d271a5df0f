@@ -1,0 +1,10 @@
+package util;
+
+
+public class WinCheck extends Event{
+		public boolean isWin;
+		
+		public void set(boolean b) {
+			isWin=b;
+		}
+}

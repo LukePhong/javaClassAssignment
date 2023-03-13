@@ -1,0 +1,521 @@
+«EXTENSION Utility»
+«IMPORT uml»
+
+«IMPORT UMLLabProfile»
+«IMPORT Persistency»
+
+«IMPORT java::standard»
+
+«EXTENSION java::jpa1::classDiag::Utility»
+«EXTENSION java::jpa1::classDiag::property::AttributeExtensions»
+«EXTENSION java::standard::classDiag::classifier::ClassifierExtensions»
+
+«REM»
+   Creates additional files for the current classifer by delegating to the DTO template.
+«ENDREM»
+«DEFINE additionalFiles(JPA1StyledElement style) FOR Classifier»
+«IF TransferableElement.isInstance(this)»
+«EXPAND DTO::supplementalFiles(style) FOR (TransferableElement)this»
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE classifier(JPA1StyledElement style) FOR Classifier»
+«EXPAND java::standard::Comment::comment FOR this»
+«EXPAND classifierAnnotations FOR this»
+«visibilityString()» «IF isAbstract && !isInterface()»abstract «ENDIF»
+«IF isStatic()»static «ENDIF»
+«IF isFinal()»final «ENDIF»
+«IF isStrictFP() && !isInterface()»strictfp «ENDIF»
+«getClassOrInterfaceString()» «EXPAND Type::type(this) FOR this»
+«LET getGeneralization() AS generalization»
+«IF generalization != null && !isInterface()»
+ extends «EXPAND Type::typeWithAnnotation(generalization) FOR generalization.general»
+«ENDIF»
+«ENDLET»
+«IF !getInterfaces().isEmpty»
+ «extendsClause()» «""-»
+«FOREACH getInterfaces() AS relationship SEPARATOR ", "»
+«EXPAND Type::typeWithAnnotation(relationship) FOR (Classifier) relationship.target.fromSingleton()»
+«ENDFOREACH»
+«ENDIF»
+{
+«EXPAND java::standard::classDiag::classifier::File::classifierChildren(style) FOR this»
+}
+«ENDDEFINE»
+
+«REM»
+«DEFINE annotations(JPA1StyledElement style) FOR Classifier»
+«EXPAND classifierAnnotations FOR this»
+«ENDDEFINE»
+«ENDREM»
+
+«REM»
+   This template creates up to seven additional members for the current classifier:
+
+   - an attribute containing a serial version UID
+   - an attribute containing a org.apache.log4j.Logger instance
+   - a factory method for value objects ("aka DTO")
+   - a factory method for fast value objects ("aka FastDTO")
+   - common implementations for java.lang.Object.equals(Object), using the org.apache.commons.lang.builder.EqualsBuilder
+   - common implementations for java.lang.Object.hashCode(), using the org.apache.commons.lang.builder.HashCodeBuilder
+   - common implementations for java.lang.Object.toString(), using the org.apache.commons.lang.builder.ToStringBuilder
+«ENDREM»
+«DEFINE additionalMember(JPA1StyledElement style, Classifier parent, MemberFragmentTuple fragment) FOR Classifier»
+«IF fragment.partId==0»
+«IF TransferableElement.isInstance(this)»
+«IF ((TransferableElement)this).generateDTO»
+«EXPAND DTO::dtoDecl FOR (TransferableElement)this»
+«ENDIF»
+«ENDIF»
+«ELSEIF fragment.partId==1»
+«IF TransferableElement.isInstance(this)»
+«IF ((TransferableElement)this).generateFastDTO»
+«EXPAND DTO::fastdtoDecl FOR (TransferableElement)this»
+«ENDIF»
+«ENDIF»
+«ELSEIF fragment.partId==2»
+«IF TechnicalSupplement.isInstance(this)»
+«EXPAND equalsMethod FOR (TechnicalSupplement)this»
+«ENDIF»
+«ELSEIF fragment.partId==3»
+«IF TechnicalSupplement.isInstance(this)»
+«EXPAND hashcodeMethod FOR (TechnicalSupplement)this»
+«ENDIF»
+«ELSEIF fragment.partId==4»
+«IF TechnicalSupplement.isInstance(this)»
+«EXPAND toStringMethod FOR (TechnicalSupplement)this»
+«ENDIF»
+«ELSEIF fragment.partId==5»
+«IF TechnicalSupplement.isInstance(this)»
+«EXPAND serialVersionUIDAttribute FOR (TechnicalSupplement)this»
+«ENDIF»
+«ELSEIF fragment.partId==6»
+«IF TechnicalSupplement.isInstance(this)»
+«EXPAND logger FOR (TechnicalSupplement)this»
+«ENDIF»
+«ENDIF»
+«ENDDEFINE»
+
+«REM»
+   Creates JPA Java annotations like @Entity, @Table, etc. 
+«ENDREM»
+«DEFINE classifierAnnotations FOR Classifier»
+«LET getWordAlias("p") AS importedEntityAnnotation» «REM» (p)ersistence / (h)ibernate / _ «ENDREM»
+«LET getBooleanAlias(false) AS useDeprecatedUniqueConstraints»
+«LET true AS omitSeperatorOnEmptyIteration»
+«FOREACH getListAliasWithAnnotations(19) AS groupCounter3»
+«IF Annotation.isInstance(groupCounter3)»
+«EXPAND java::legacy::classDiag::Annotation::annotation(null) FOR (Annotation) groupCounter3»
+«ELSE»
+«IF groupCounter3 == 1»
+«IF getAppliedStereotype("Persistency::PersistentPart") == null»
+«REM»javax.persistence.Entity annotation«ENDREM»
+@«""-»
+«IF "p" != importedEntityAnnotation»
+javax.persistence.«""-»
+«ELSE»
+«addImport("javax.persistence.Entity")»
+«ENDIF»
+Entity«""-»
+«IF Entity.isInstance(this) && !((Entity)this).entityName.empty()»
+(name="«((Entity)this).entityName»")
+«ELSE»
+
+«ENDIF»
+«ENDIF»
+«ELSEIF groupCounter3 == 2»
+«IF getAppliedStereotype("Persistency::Entity") != null»
+«REM»org.hibernate.Entity annotation - only if specific options set«ENDREM»
+«LET (Entity)this AS entity»
+«IF entity.explicitPolymorphism»
+@«""-»
+«IF "h" != importedEntityAnnotation»
+org.hibernate.annotations.«""-»
+«ELSE»
+«addImport("org.hibernate.annotations.Entity")»
+«ENDIF»
+Entity(polymorphism = PolymorphismType.EXPLICIT)
+«addImport("org.hibernate.annotations.PolymorphismType")»
+«ENDIF»
+«ENDLET»
+«ENDIF»
+«ELSEIF groupCounter3 == 3»
+«IF getAppliedStereotype("Persistency::Entity") != null»
+«IF !((Entity)this).discriminatorValue.empty()»
+@DiscriminatorValue(«optionalText("value=", false)»"«((Entity)this).discriminatorValue»")
+«addImport("javax.persistence.DiscriminatorValue")»
+«ENDIF»
+«ENDIF»
+«ELSEIF groupCounter3 == 4»
+«IF getAppliedStereotype("Persistency::Entity") != null»
+«IF !((Entity)this).cacheable»
+@Cacheable(«optionalText("value=", false)»false)
+«addImport("javax.persistence.Cacheable")»
+«ENDIF»
+«ENDIF»
+«ELSEIF groupCounter3 == 5»
+«IF StructuredClassifier.isInstance(this)»
+«LET ((StructuredClassifier)this).ownedAttribute.typeSelect(PrimaryKey) AS pks»
+«IF pks.size > 1 && !pks.select(pk | pk.idClassifier != null).isEmpty»
+«LET ((PrimaryKey)pks.select(pk | pk.idClassifier != null).fromSingleton()) AS pk»
+@IdClass(«pk.idClassifier».class) /* from attribute «pk.name» */ 
+«addImport("javax.persistence.IdClass")»
+«ENDLET»
+«ENDIF»
+«ENDLET»
+«ELSEIF Interface.isInstance(this)»
+«LET ((Interface)this).ownedAttribute.typeSelect(PrimaryKey) AS pks»
+«IF pks.size > 1 && !pks.select(pk | pk.idClassifier != null).isEmpty»
+«LET ((PrimaryKey)pks.select(pk | pk.idClassifier != null).fromSingleton()) AS pk»
+@IdClass(«pk.idClassifier».class) /* from attribute «pk.name» */ 
+«addImport("javax.persistence.IdClass")»
+«ENDLET»
+«ENDIF»
+«ENDLET»
+«ENDIF»
+«ELSEIF groupCounter3 == 6»
+«IF getAppliedStereotype("Persistency::Table") != null»
+«LET (Table)this AS table»
+@Table(«""-»
+«LET true AS omitSeperatorOnEmptyIteration»
+«FOREACH getIntListAlias(0.upTo(3)) AS groupCounter0 SEPARATOR ", "»
+«IF groupCounter0 == 0»
+«IF !table.tableName.empty()»
+name="«table.tableName»"«""-»
+«ENDIF»
+«ELSEIF groupCounter0 == 1»
+«IF !table.catalog.empty()»
+catalog="«table.catalog»"«""-»
+«ENDIF»
+«ELSEIF groupCounter0 == 2»
+«IF !table.schema.empty()»
+schema="«table.schema»"«""-»
+«ENDIF»
+«ELSEIF groupCounter0 == 3»
+«IF !table.tableConstraints.isEmpty && !useDeprecatedUniqueConstraints»
+«LET getBooleanAlias(true) AS brace»
+uniqueConstraints=«IF brace»{«ENDIF» «EXPAND java::jpa1::classDiag::Commons::uniqueConstraint FOREACH table.tableConstraints SEPARATOR  ", "» «IF brace»}«ENDIF»«""-»
+«ENDLET»
+«ENDIF»
+«ENDIF»
+«ENDFOREACH»
+«ENDLET»
+«addImport("javax.persistence.Table")»
+)
+«ENDLET»
+«ENDIF»
+«ELSEIF groupCounter3 == 7»
+«IF getAppliedStereotype("Persistency::InheritanceMapping") != null»
+«LET (InheritanceMapping)this AS inheritanceMapping»
+@Inheritance«""-»
+«IF "SINGLE_TABLE" != inheritanceMapping.strategy.name || getBooleanAlias(false)»
+(strategy=InheritanceType.«inheritanceMapping.strategy.name»)
+«addImport("javax.persistence.InheritanceType")»
+«ELSE»
+
+«ENDIF»
+«addImport("javax.persistence.Inheritance")»
+«ENDLET»
+«ENDIF»
+«ELSEIF groupCounter3 == 8»
+«IF getAppliedStereotype("Persistency::InheritanceMapping") != null»
+«LET (InheritanceMapping)this AS inheritanceMapping»
+«IF "TABLE_PER_CLASS" != inheritanceMapping.strategy.name && 
+                  ( !inheritanceMapping.discriminatorColumnName.empty() 
+                  || "none" != inheritanceMapping.discriminatorColumnType.name 
+                  || !inheritanceMapping.discriminatorColumnDefinition.empty()
+                  || 0 != inheritanceMapping.discriminatorColumnLength)» 
+@«IF getBooleanAlias(false)»javax.persistence.«ENDIF»DiscriminatorColumn(«""-»
+«LET true AS omitSeperatorOnEmptyIteration»
+«FOREACH getIntListAlias(0.upTo(3)) AS groupCounter1 SEPARATOR ", "»
+«IF groupCounter1 == 0»
+«IF !inheritanceMapping.discriminatorColumnName.empty()»
+name="«inheritanceMapping.discriminatorColumnName»"«""-»
+«ENDIF»
+«ELSEIF groupCounter1 == 1»
+«IF "none" != inheritanceMapping.discriminatorColumnType.name»
+discriminatorType=DiscriminatorType.«inheritanceMapping.discriminatorColumnType.name»«""-»
+«addImport("javax.persistence.DiscriminatorType")»
+«ENDIF»
+«ELSEIF groupCounter1 == 2»
+«IF !inheritanceMapping.discriminatorColumnDefinition.empty()»
+definition="«inheritanceMapping.discriminatorColumnDefinition»"«""-»
+«ENDIF»
+«ELSEIF groupCounter1 == 3»
+«IF 0 != inheritanceMapping.discriminatorColumnLength»
+length=«inheritanceMapping.discriminatorColumnLength»«""-»
+«ENDIF»
+«ENDIF»
+«ENDFOREACH»
+«ENDLET»
+)
+«addImport("javax.persistence.DiscriminatorColumn")»
+«ENDIF»
+«ENDLET»
+«ENDIF»
+«ELSEIF groupCounter3 == 9»
+«IF PrimaryKeyJoinColumns.isInstance(this)»
+«EXPAND java::jpa1::classDiag::Commons::primaryKeyJoinColumns FOR (PrimaryKeyJoinColumns) this»
+«ENDIF»
+«ELSEIF groupCounter3 == 10»
+«IF hasKeyword("NamedQueries")»
+@NamedQueries(
+«REM»value={@NamedQuery}«ENDREM»
+)
+«addImport("javax.persistence.NamedQueries")»
+«addImport("javax.persistence.NamedQuery")»
+«ENDIF»
+«ELSEIF groupCounter3 == 11»
+«IF Overrides.isInstance(this)»
+«EXPAND java::jpa1::classDiag::Commons::override FOR (Overrides) this»
+«ENDIF»
+«ELSEIF groupCounter3 == 12»
+«IF getAppliedStereotype("Persistency::Cached") != null»«REM»Support for hibernate Caching.«ENDREM»
+«EXPAND java::jpa1::classDiag::Commons::cached FOR this»
+«ENDIF»
+«ELSEIF groupCounter3 == 13»
+«IF getAppliedStereotype("Persistency::Batch") != null»
+«EXPAND java::jpa1::classDiag::Commons::batch FOR this»
+«ENDIF»
+«ELSEIF groupCounter3 == 14»
+«IF getAppliedStereotype("Persistency::PersistentPart") != null»
+«LET (PersistentPart)this AS persistentPart»
+«IF "MAPPED_SUPERCLASS" == persistentPart.partType.name»
+@MappedSuperclass
+«addImport("javax.persistence.MappedSuperclass")»
+«ELSEIF "EMBEDDABLE" == persistentPart.partType.name»
+@Embeddable
+«addImport("javax.persistence.Embeddable")»
+«ELSE»
+/* Code generation encountered an error - «persistentPart.partType.name» unknown. */
+«ENDIF»
+«ENDLET»
+«ENDIF»
+«ELSEIF groupCounter3 == 15»«REM» Deprecated since JPA1-Final, though supported by some implementations «ENDREM» 
+«IF useDeprecatedUniqueConstraints && Table.isInstance(this)»
+«LET ((Table)this).tableConstraints AS ucs»
+«IF ucs != null && ucs.size==1»
+«EXPAND java::jpa1::classDiag::Commons::uniqueConstraint FOR (UniqueConstraint) ucs.fromSingleton()»
+«ENDIF»
+«ENDLET»
+«ENDIF»
+«ELSEIF groupCounter3 == 16»
+«IF Indexed.isInstance(this)»
+@Indexed«IF ((Indexed)this).indexFile!=null»(index="«((Indexed)this).indexFile»")«ENDIF»
+
+«addImport("org.hibernate.search.annotations.Indexed")»
+«ENDIF»
+«ELSEIF groupCounter3 == 17»
+«IF ClassBridge.isInstance(this)»
+@ClassBridge(«""»
+«LET ((ClassBridge)this) AS b»
+«LET true AS omitSeperatorOnEmptyIteration»
+«FOREACH getIntListAlias(0.upTo(3)) AS groupCounter2 SEPARATOR ","»
+«IF groupCounter2 == 0»
+«IF b.bridgeName != null && !b.bridgeName.empty()»
+name="«b.bridgeName»"
+«ENDIF»
+«ELSEIF groupCounter2 == 1»
+«IF b.index && b.tokenized»
+«IF getBooleanAlias(false)»
+index=Index.TOKENIZED
+«addImport("org.hibernate.search.annotations.Index")»
+«ENDIF»
+«ELSEIF b.index && !b.tokenized»
+index=Index.UN_TOKENIZED
+«addImport("org.hibernate.search.annotations.Index")»
+«ELSEIF !b.index»
+index=Index.NO
+«addImport("org.hibernate.search.annotations.Index")»
+«ELSE»
+encountered unreachable template alternative
+«ENDIF»
+«ELSEIF groupCounter2 == 2»
+«IF b.store»
+store=Store.YES
+«addImport("org.hibernate.search.annotations.Store")»
+«ELSE»
+«IF getBooleanAlias(false)»
+store=Store.NO
+«addImport("org.hibernate.search.annotations.Store")»
+«ENDIF»
+«ENDIF»
+«ELSEIF groupCounter2 == 3»
+impl=«EXPAND Type::type(this) FOR b.implementation».class
+«ENDIF»
+«ENDFOREACH»
+«ENDLET»
+«ENDLET»
+)
+«addImport("org.hibernate.search.annotations.ClassBridge")»
+«ENDIF»
+«ELSEIF groupCounter3 == 18»
+«IF Analyzer.isInstance(this)»
+@Analyzer(«""»
+«IF ((Analyzer)this).analyzer != null»
+impl=«EXPAND Type::type(this) FOR ((Analyzer)this).analyzer».class)
+«ELSE»
+def="«((Analyzer)this).analyzerDef»")
+«ENDIF»
+«addImport("org.hibernate.search.annotations.Analyzer")»
+«ENDIF»
+«ELSEIF groupCounter3 == 19»
+«IF SequenceGenerator.isInstance(this)»
+«LET (SequenceGenerator)this AS generator»
+@SequenceGenerator(«""-»
+«LET true AS omitSeperatorOnEmptyIteration»
+«FOREACH getIntListAlias(0.upTo(3)) AS groupCounter3 SEPARATOR ", "»
+«IF groupCounter3 == 0»
+name="«generator.generatorName»"«""-»
+«ELSEIF groupCounter3 == 1»
+«IF !generator.sequenceName.empty()»
+sequenceName="«generator.sequenceName»"«""-»
+«ENDIF»
+«ELSEIF groupCounter3 == 2»
+«IF generator.initialValue != 1»
+initialValue=«generator.initialValue»«""-»
+«ENDIF»
+«ELSEIF groupCounter3 == 3»
+«IF generator.allocationSize != 50»
+allocationSize=«generator.allocationSize»«""-»
+«ENDIF»
+«ENDIF»
+«ENDFOREACH»
+«ENDLET»
+)
+«addImport("javax.persistence.SequenceGenerator")»
+«ENDLET»
+«ENDIF»
+«ENDIF»
+«ENDIF»
+«ENDFOREACH»
+«ENDLET»
+«ENDLET»
+«ENDLET»
+«ENDDEFINE»
+
+«DEFINE equalsMethod FOR TechnicalSupplement»
+«LET getWordAlias("builder") AS var»
+«LET getWordAlias("obj") AS param»
+«IF HelperMode::NONE!=identityHelpers»
+«IF getBooleanAlias(true)»
+@Override
+«ENDIF»
+public boolean equals(«IF getBooleanAlias(false)»final «ENDIF»Object «param») {
+«IF HelperMode::GENERIC==identityHelpers»«REM» reflective equals «ENDREM»
+    return EqualsBuilder.reflectionEquals(this);
+«addImportWithAlternatives({"org.apache.commons.lang.builder.EqualsBuilder", "org.apache.commons.lang3.builder.EqualsBuilder"})»
+«ELSEIF HelperMode::CUSTOMIZED_BUILDER==identityHelpers»
+	if (this == «param») {
+		return true;
+	}
+	if (!(«param» instanceof «this.name»)) {
+		return false;
+	}
+«LET getBooleanAlias(false) AS wildcharGenerics»	
+	«IF getBooleanAlias(true)»final «ENDIF»«this.name»«IF wildcharGenerics»<?>«ENDIF» rhs = («this.name»«IF wildcharGenerics»<?>«ENDIF») «param»;
+«ENDLET»
+	«IF getBooleanAlias(true)»final «ENDIF»EqualsBuilder «var» = new EqualsBuilder();
+«IF this.getSuperClass() != null || getBooleanAlias(false)»
+	«var».appendSuper(super.equals(rhs));
+«ENDIF»
+«FOREACH (Collection[Property]) getListAlias(identityContributors.select(c | ownedElement.contains(c))) AS p»
+   «var».append(«IF getBooleanAlias(false)»this.«ENDIF»«p.name», rhs.«p.name»);
+«ENDFOREACH»
+	return «var».isEquals();
+«addImportWithAlternatives({"org.apache.commons.lang.builder.EqualsBuilder", "org.apache.commons.lang3.builder.EqualsBuilder"})»
+«ELSEIF HelperMode::CUSTOMIZED==identityHelpers»
+if («param» instanceof «EXPAND Type::type(this) FOR this») {
+    «IF getBooleanAlias(true)»final «ENDIF»«EXPAND Type::type(this) FOR this» other = («EXPAND Type::type(this) FOR this») «param»;
+«FOREACH (Collection[Property]) getListAlias(identityContributors.select(c | ownedElement.contains(c))) AS p»      
+    if (ObjectUtils.equals(«IF getBooleanAlias(true)»this.«ENDIF»«p.name», other.«p.name») == false)
+        return false;
+«ENDFOREACH»
+    return true;
+}
+return false;
+«addImportWithAlternatives({"org.apache.commons.lang.ObjectUtils", "org.apache.commons.lang3.ObjectUtils"})»
+«ELSE»
+unknown HelperMode literal «identityHelpers.name»
+«ENDIF»
+}
+«ENDIF»
+«ENDLET»
+«ENDLET»
+«ENDDEFINE»
+
+«DEFINE hashcodeMethod FOR TechnicalSupplement»
+«LET getWordAlias("builder") AS var»
+«IF HelperMode::NONE!=identityHelpers»
+«IF getBooleanAlias(true)»
+@Override
+«ENDIF»
+public int hashCode() {
+«IF HelperMode::GENERIC==identityHelpers»«REM» reflective hashcode «ENDREM»
+    return HashCodeBuilder.reflectionHashCode(this);
+«ELSEIF HelperMode::CUSTOMIZED==identityHelpers || HelperMode::CUSTOMIZED_BUILDER==identityHelpers»
+	«IF getBooleanAlias(true)»final «ENDIF»HashCodeBuilder «var» = new HashCodeBuilder();
+«IF this.getSuperClass() != null || getBooleanAlias(false)»
+	«var».appendSuper(super.hashCode());
+«ENDIF»
+«IF HelperMode::CUSTOMIZED_BUILDER==identityHelpers»
+«FOREACH (Collection[Property]) getListAlias(identityContributors.select(c | ownedElement.contains(c))) AS p»
+	«var».append(«IF getBooleanAlias(true)»this.«ENDIF»«p.name»);
+«ENDFOREACH»
+«ELSEIF HelperMode::CUSTOMIZED==identityHelpers»
+«FOREACH (Collection[Property]) getListAlias(identityContributors.select(c | ownedElement.contains(c))) AS p»
+«IF getBooleanAlias(true)»
+    if («IF getBooleanAlias(true)»this.«ENDIF»«p.name» != null)
+«ENDIF»
+	«var».append(«IF getBooleanAlias(true)»this.«ENDIF»«p.name»);
+«ENDFOREACH»
+«ENDIF»
+	return «var».toHashCode();
+«ELSE»
+unknown HelperMode literal «identityHelpers.name»	
+«ENDIF»
+}
+«addImportWithAlternatives({"org.apache.commons.lang.builder.HashCodeBuilder", "org.apache.commons.lang3.builder.HashCodeBuilder"})»
+«ENDIF»
+«ENDLET»
+«ENDDEFINE»
+
+«DEFINE toStringMethod FOR TechnicalSupplement»
+«LET getWordAlias("builder") AS var»
+«IF HelperMode::NONE!=stringHelper»
+«IF getBooleanAlias(true)»
+@Override
+«ENDIF»
+public String toString() {
+«IF HelperMode::GENERIC==stringHelper» «REM» reflective toString «ENDREM»
+    return ToStringBuilder.reflectionToString(this);
+«ELSEIF HelperMode::CUSTOMIZED==stringHelper»
+	«IF getBooleanAlias(true)»final «ENDIF»ToStringBuilder «var» = new ToStringBuilder(this«IF getBooleanAlias(true)», ToStringStyle.SHORT_PREFIX_STYLE«addImportWithAlternatives({"org.apache.commons.lang.builder.ToStringStyle", "org.apache.commons.lang3.builder.ToStringStyle"})»«ENDIF»);
+«IF this.getSuperClass() != null || getBooleanAlias(false)»
+	«var».appendSuper(super.toString());
+«ENDIF»
+«FOREACH (Collection[Property]) getListAlias(stringContributors.select(c | ownedElement.contains(c))) AS p»
+	«var».append(«IF p.getBooleanAlias(false)»"«p.getWordAlias("value")»", «ENDIF»«IF getBooleanAlias(false)»this.«ENDIF»«p.name»);
+«ENDFOREACH»
+	return «var».toString();
+«ELSE»
+unknown HelperMode literal «stringHelper.name»	
+«ENDIF»
+}
+«addImportWithAlternatives({"org.apache.commons.lang.builder.ToStringBuilder", "org.apache.commons.lang3.builder.ToStringBuilder"})»
+«ENDIF»
+«ENDLET»
+«ENDDEFINE»
+
+«DEFINE serialVersionUIDAttribute FOR TechnicalSupplement»
+«IF serialVersionUID != null && serialVersionUID != "" »
+private static final long serialVersionUID = «this.serialVersionUID»L;
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE logger FOR TechnicalSupplement»
+«IF logger»
+private static final Logger LOG = Logger.getLogger(«name».class);
+«addImport("org.apache.log4j.Logger")»
+«ENDIF»
+«ENDDEFINE»

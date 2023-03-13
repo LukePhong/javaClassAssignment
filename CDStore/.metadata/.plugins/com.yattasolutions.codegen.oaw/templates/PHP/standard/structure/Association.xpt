@@ -1,0 +1,204 @@
+«IMPORT uml»
+«IMPORT UMLLabProfile»
+
+«EXTENSION Utility»
+«EXTENSION PHP::standard::structure::Attribute»
+
+
+«DEFINE role (Classifier parent,StyledElement style,MemberFragmentTuple fragment) FOR Property»
+«IF fragment.partId==0»
+«IF this.isNavigable() && !isPrimitive(type)»
+«IF isMultivalued()»
+«EXPAND role_FRG_ToManyDeclaration(parent, style) FOR this»
+«ELSE»
+«EXPAND role_FRG_ToOneDeclaration(parent, style) FOR this»
+«ENDIF»
+«ENDIF»
+«ELSEIF fragment.partId==1»
+«IF this.isNavigable() && !isPrimitive(type)»
+«IF isMultivalued()»
+«EXPAND role_FRG_ToManyGetter(parent, style) FOR this»
+«ELSE»
+«EXPAND role_FRG_ToOneGetter(parent, style) FOR this»
+«ENDIF»
+«ENDIF»
+«ELSEIF fragment.partId==2»
+«IF this.isNavigable() && !isPrimitive(type)»
+«IF isMultivalued()»
+«EXPAND role_FRG_ToManyAdder(parent, style) FOR this»
+«ELSE»
+«EXPAND role_FRG_ToOneSetter(parent, style) FOR this»
+«ENDIF»
+«ENDIF»
+«ELSEIF fragment.partId==3»
+«IF this.isNavigable() && !isPrimitive(type)»
+«IF isMultivalued()»
+«EXPAND role_FRG_ToManyRemover(parent, style) FOR this»
+«ENDIF»
+«ENDIF»
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE role_FRG_ToOneDeclaration(Classifier parent, StyledElement style)  FOR Property»
+«IF !Interface.isInstance(parent)»
+«EXPAND PHP::standard::Comment::comment»
+private «IF this.isStatic»static «ENDIF»$«name»;
+
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE role_FRG_ToOneSetter(Classifier parent, StyledElement style)  FOR Property»
+«LET getWordAlias("obj") AS value»
+«visibilityString(this)» «IF this.isStatic»static «ENDIF»function set«name.toFirstUpper()»(«EXPAND PHP::standard::structure::Unit::name(parent) FOR type» $«value» = NULL)«""»
+«IF Interface.isInstance(parent)»
+;
+«ELSE»
+ {
+«LET getOtherEnd() AS partnerRole»
+«IF partnerRole.isNavigable()»
+   $oldValue = «EXPAND Attribute::thisName(parent)»;
+   if($oldValue == $obj) {
+      return; // nothing to do here
+   }
+«ENDIF»
+   «"   "»«EXPAND Attribute::thisName(parent)» = $«value»;
+«IF partnerRole.isNavigable()»
+   if($oldValue != null) {
+«IF partnerRole.isMultivalued()»
+      $oldValue->removeFrom«partnerRole.name.pluralize().toFirstUpper()»($this);
+«ELSE»
+      $oldValue->set«partnerRole.name.toFirstUpper()»(null);
+«ENDIF»
+   } 
+   if($«value» != null) {
+«IF partnerRole.isMultivalued()»
+      $«value»->addTo«partnerRole.name.pluralize().toFirstUpper()»($this);
+«ELSE»
+      $«value»->set«partnerRole.name.toFirstUpper()»($this);
+«ENDIF»
+   }
+«ENDIF»
+«ENDLET»
+}
+«ENDIF»
+
+«ENDLET»
+«ENDDEFINE»
+
+«DEFINE role_FRG_ToOneGetter(Classifier parent, StyledElement style)  FOR Property»
+«visibilityString(this)» «IF this.isStatic»static «ENDIF»function get«name.toFirstUpper()»()«""»
+«IF Interface.isInstance(parent)»
+;
+«ELSE»
+ {
+   return «EXPAND Attribute::thisName(parent)»;
+}
+«ENDIF»
+
+«ENDDEFINE»
+
+«DEFINE role_FRG_ToManyDeclaration(Classifier parent, StyledElement style)  FOR Property»
+«IF !Interface.isInstance(parent)»
+«EXPAND PHP::standard::Comment::comment»
+private «IF this.isStatic»static «ENDIF»$«name.pluralize()» = array();
+
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE role_FRG_ToManyGetter(Classifier parent, StyledElement style)  FOR Property»
+/**
+ * Returns an array containing all elements contained in {@link #«name.pluralize()»}.
+ * @return array
+ */
+«visibilityString(this)» «IF this.isStatic»static «ENDIF»function get«name.pluralize().toFirstUpper()»()«""»
+«IF Interface.isInstance(parent)»
+;
+«ELSE»
+ {
+   return «EXPAND Attribute::thisName(parent)»;
+}
+«ENDIF»
+
+«ENDDEFINE»
+
+«DEFINE role_FRG_ToManyAdder(Classifier parent, StyledElement style)  FOR Property»
+«LET getOtherEnd() AS partnerRole»
+«LET getWordAlias("obj") AS value»
+/**
+ * Appends the specified element to the end of {@link #«name.pluralize()»}«""»
+«IF isUnique»
+,
+ * if and only if the element is not yet contained in the list«""»
+«ENDIF»
+.
+«IF partnerRole.isNavigable()»
+ * Takes care of referential integrity.
+«ENDIF»
+ * @param $«value» element to add
+ * @return true if the adding was successful
+ */
+«visibilityString(this)» «IF this.isStatic»static «ENDIF»function addTo«name.pluralize().toFirstUpper()»(«EXPAND PHP::standard::structure::Unit::name(parent) FOR type» $«value»)«""»
+«IF Interface.isInstance(parent)»
+;
+«ELSE»
+ {
+   if («IF !isUnique»true || «ENDIF»!in_array($«value», «EXPAND Attribute::thisName(parent)»)) {
+      array_push(«EXPAND Attribute::thisName(parent)», $«value»);
+«IF partnerRole.isNavigable()»
+      // referential integrity
+«IF partnerRole.isMultivalued()»
+      $«value»->addTo«partnerRole.name.pluralize().toFirstUpper()»($this);
+«ELSE»
+      $«value»->set«partnerRole.name.toFirstUpper()»($this);
+«ENDIF»
+«ENDIF»
+      return true;
+   }
+   return false;
+}
+«ENDIF»
+«ENDLET»
+«ENDLET»
+
+«ENDDEFINE»
+
+«DEFINE role_FRG_ToManyRemover(Classifier parent, StyledElement style)  FOR Property»
+«LET getOtherEnd() AS partnerRole»
+«LET getWordAlias("obj") AS value»
+/**
+ * Removes the given object from {@link #«name.pluralize()»}.
+«IF partnerRole.isNavigable()»
+ * Takes care of referential integrity.
+«ENDIF»
+ * @param $«value» element to remove
+ * @return true if the removal was successful
+ */
+«visibilityString(this)» «IF this.isStatic»static «ENDIF»function removeFrom«name.pluralize().toFirstUpper()»(«EXPAND PHP::standard::structure::Unit::name(parent) FOR type» $«value»)«""»
+«IF Interface.isInstance(parent)»
+;
+«ELSE»
+ {
+   if (in_array($«value», «EXPAND Attribute::thisName(parent)»)) {
+      foreach («EXPAND Attribute::thisName(parent)» as $i => $value) {
+         if( $value == $obj) {
+            unset(«EXPAND Attribute::thisName(parent)»[$i]);
+         }
+      }
+      «"      "»«EXPAND Attribute::thisName(parent)» = array_values(«EXPAND Attribute::thisName(parent)»);
+«IF partnerRole.isNavigable()»
+      // referential integrity
+«IF partnerRole.isMultivalued()»
+      $«value»->removeFrom«partnerRole.name.pluralize().toFirstUpper()»($this);
+«ELSE»
+      $«value»->set«partnerRole.name.toFirstUpper()»(null);
+«ENDIF»
+«ENDIF»
+      return true;
+   }
+   return false;
+}
+«ENDIF»
+«ENDLET»
+«ENDLET»
+
+«ENDDEFINE»

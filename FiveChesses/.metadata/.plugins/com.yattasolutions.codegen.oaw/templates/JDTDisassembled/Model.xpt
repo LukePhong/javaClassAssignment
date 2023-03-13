@@ -1,0 +1,19 @@
+«IMPORT uml»
+«IMPORT UMLLabProfile»
+«IMPORT JDTDisassembled::standard::structure»
+
+«EXTENSION Utility»
+
+«DEFINE start FOR Model»
+«EXPAND model(style())»
+«ENDDEFINE»
+
+«DEFINE model(StyledElement style) FOR Model»
+«FOREACH getAllOwnedTypes() AS element»
+«IF ((Class.isInstance(element) || Interface.isInstance(element)) || Enumeration.isInstance(element)) && !Behavior.isInstance(element)»
+«IF element.isReference()»
+«EXPAND File::file(element.style()) FOR (Classifier) element»
+«ENDIF»
+«ENDIF»
+«ENDFOREACH»
+«ENDDEFINE»

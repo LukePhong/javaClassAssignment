@@ -1,0 +1,8 @@
+package board;
+
+class 
+
+public class BoardBuffer {
+	public int[] pos;
+	public Map<> board
+}

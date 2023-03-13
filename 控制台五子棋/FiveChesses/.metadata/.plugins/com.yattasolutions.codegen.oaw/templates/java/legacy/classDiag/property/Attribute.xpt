@@ -1,0 +1,105 @@
+«IMPORT uml»
+«IMPORT UMLLabProfile»
+«IMPORT java::standard»
+
+«EXTENSION Utility»
+«EXTENSION java::legacy::classDiag::property::AttributeExtensions»
+«EXTENSION java::legacy::classDiag::classifier::ClassifierExtensions»
+«EXTENSION java::standard::classDiag::classifier::ClassifierExtensions»
+«EXTENSION java::legacy::classDiag::operation::OperationExtensions»
+«EXTENSION java::standard::classDiag::operation::OperationExtensions»
+
+«DEFINE attribute (LegacyStyledElement style,Classifier parent,MemberFragmentTuple fragment) FOR Property»
+«IF fragment.partId==0»
+«EXPAND java::standard::classDiag::property::Attribute::attribute_FRG_Declaration(style, parent) FOR this»
+«ELSEIF fragment.partId==1»
+«EXPAND java::standard::classDiag::property::Attribute::attribute_FRG_Setter(style, parent) FOR this»
+«ELSEIF fragment.partId==2»
+«EXPAND java::standard::classDiag::property::Attribute::attribute_FRG_Getter(style, parent) FOR this»
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE attribute_FRG_Declaration(LegacyStyledElement style, Classifier parent)  FOR Property»
+«REM»IF !this.isDerived TODO #2133 support for derived properties«ENDREM»
+«IF !MultiDeclaration.isInstance(this) || ((MultiDeclaration)this).root
+ || (falseForReverseTrueForForward() && !this.isSibling())»
+«REM» || (falseForReverseTrueForForward() && ((MultiDeclaration)this).backlink(MultiDeclaration.getProperty("siblings")).isEmpty)»«ENDREM»
+«FOREACH getListAliasWithAnnotations(5) AS modifier»
+«IF Annotation.isInstance(modifier)»
+«EXPAND java::legacy::classDiag::Annotation::annotation(style) FOR (Annotation) modifier»
+«ELSE»
+«getModifier((int) modifier, parent)»
+«ENDIF»
+«ENDFOREACH»
+«LET getBooleanAlias(true) AS arrayOnType»
+ «EXPAND java::standard::Multiplicity::typedMultiplicityElement(arrayOnType) FOR this» «name»
+«IF !arrayOnType && upper != 1 && isMultivalued() && Array.isInstance(this)»«EXPAND java::standard::Multiplicity::arrayBraces FOR this»«ENDIF»
+«IF parent.isAnnotation()»
+«IF isConstant()»
+«IF ^default != null» = «^default»«ENDIF»;
+«ELSE»
+() «IF ^default != null» default «^default»«ENDIF»;
+«ENDIF»
+«ELSE»
+«IF ^default != null» = «^default»«ENDIF»
+«IF MultiDeclaration.isInstance(this)»
+, «""»
+«FOREACH ((MultiDeclaration)this).siblings AS p SEPARATOR ", "»
+«IF this.type == p.type && 
+    this.visibility == p.visibility &&
+    MultiDeclaration.isInstance(p) && 
+    (falseForReverseTrueForForward() || LegacyStyledElement.isInstance(p))»«REM»workaround for attrs with legacy parent«ENDREM»
+«REM»this.upper == p.upper && «ENDREM»
+«p.name»«IF !arrayOnType && p.upper != 1 && p.isMultivalued() && Array.isInstance(p)»«EXPAND java::standard::Multiplicity::arrayBraces FOR p»«ENDIF»«IF p.^default != null» = «p.^default»«ENDIF»
+«ENDIF»
+«ENDFOREACH»
+«ENDIF»
+;
+«REM»«IF !type.isPrimitive()»
+ - not a legacy attribute - 
+«ENDIF»
+«ENDREM»
+«ENDIF»
+«ENDLET»
+«ENDIF»
+«REM»ENDIF«ENDREM»
+«ENDDEFINE»
+
+«DEFINE attribute_FRG_Setter(LegacyStyledElement style, Classifier parent)  FOR Property»
+«IF !isReadOnly»
+«EXPAND accessMethod(style, parent, "set") FOR this»
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE attribute_FRG_Getter(LegacyStyledElement style, Classifier parent)  FOR Property»
+«EXPAND accessMethod(style, parent, "get") FOR this»
+«ENDDEFINE»
+
+«DEFINE accessMethod(LegacyStyledElement style, Classifier parent, String prefix) FOR Property»
+«IF !MultiDeclaration.isInstance(this) || ((MultiDeclaration)this).root»
+«IF LegacyStyledElement.isInstance(this) && !(((LegacyStyledElement)this).associatedElement.isEmpty)»
+«LET ((LegacyStyledElement)this).associatedElement.select(element|Operation.isInstance(element) && ((Operation) element).name.startsWith(prefix) ) AS accessMethods»
+«IF accessMethods.size == 1 || !falseForReverseTrueForForward()»
+«LET (Operation) accessMethods.fromSingleton() AS accessMethod»
+«LET accessMethod.ownedParameter.select(e|e.direction == ParameterDirectionKind::in && e.name != null) AS parameters»
+«IF (	accessMethod.name == prefix + this.name.toFirstUpper()
+		&& accessMethod.isStatic == this.isStatic
+		&& accessMethod.visibility == this.visibility
+		&& !accessMethod.hasKeyword("init")
+		&& (prefix == "get" ? /*accessMethod.type.name == this.type.name &&*/ parameters.isEmpty : true)
+     )
+     ||
+     falseForReverseTrueForForward()»
+«REM»FIXME: operation template is not inlined and x-template reasoning does not work
+«EXPAND java::legacy::classDiag::operation::Operation::operation(style, parent, null) FOR accessMethod»«ENDREM»
+«EXPAND java::legacy::classDiag::operation::Operation::operation(parent) FOR accessMethod»
+«ELSE»
+«fail("unreachable code")»«REM»TODO: this branch should not be needed«ENDREM»
+«ENDIF»
+«ENDLET»
+«ENDLET»
+«ENDIF»
+«ENDLET»
+«ENDIF»
+«ENDIF»
+«ENDDEFINE»

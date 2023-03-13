@@ -1,0 +1,17 @@
+«IMPORT uml»
+«IMPORT UMLLabProfile»
+
+«EXTENSION Utility»
+
+«DEFINE literal (Classifier parent,StyledElement style,MemberFragmentTuple fragment) FOR EnumerationLiteral»
+«IF fragment.partId==0»
+«EXPAND literal_FRG_single(parent, style) FOR this»
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE literal_FRG_single(Classifier parent, StyledElement style)  FOR EnumerationLiteral»
+«IF Enumeration.isInstance(parent)»
+const «name» = «getWordAlias(parent.getMembers().indexOf(this).toString())»;
+
+«ENDIF»
+«ENDDEFINE»

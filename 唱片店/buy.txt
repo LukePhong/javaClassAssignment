@@ -1,0 +1,73 @@
+Welcome CDStore! Enter h for Help!
+au
+ADDING USERS
+Enter User's Name:
+Wang
+Enter User's Id:
+1
+Enter User's Money:
+15
+Finish
+Do you wanna add again?[y/n]
+y
+ADDING USERS
+Enter User's Name:
+Feng
+Enter User's Id:
+2
+Enter User's Money:
+100
+Finish
+Do you wanna add again?[y/n]
+n
+ac
+ADDING DISKS
+Enter Disk's Name:
+Matrix
+Enter Disk's Quantity:
+10
+Enter Disk's Money:
+20
+Finish
+Do you wanna add again?[y/n]
+y
+ADDING DISKS
+Enter Disk's Name:
+Tomorrow
+Enter Disk's Quantity:
+10
+Enter Disk's Money:
+5
+Finish
+Do you wanna add again?[y/n]
+n
+buy
+BUY
+Enter User's Name:
+Wang
+Enter User's Id:
+1
+Enter the Disk to Buy:
+Matrix
+Enter the Number of Disks:
+100
+No Money or No Enough Quantity!
+Finish
+Do you wanna add again?[y/n]
+y
+BUY
+Enter User's Name:
+Feng
+Enter User's Id:
+2
+Enter the Disk to Buy:
+Matrix
+Enter the Number of Disks:
+5
+Finish
+Do you wanna add again?[y/n]
+n
+ru
+[User [name=Wang, id=1, borrowed=[], money=15.0], User [name=Feng, id=2, borrowed=[], money=0.0]]
+rd
+[Disk [name=Matrix, money=20.0, num=5], Disk [name=Tomorrow, money=5.0, num=10]]

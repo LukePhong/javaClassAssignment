@@ -1,0 +1,44 @@
+package control;
+
+import control.Controller;
+import util.*;
+
+public abstract class VMethods implements Processor{
+	
+}
+
+class hQuit extends MMethods{
+	
+	@Override
+	public Object process(Object e) {
+		System.out.println("Quiting");
+		return e;
+	}
+}
+
+class hWrongCommand extends MMethods{
+	
+	@Override
+	public Object process(Object e) {
+		System.out.println("No this Command! Check Your Input!");
+		return e;
+	}
+}
+
+class hHelp extends MMethods{
+	
+	@Override
+	public Object process(Object e) {
+		System.out.println("This is HELP");
+		return e;
+	}
+}
+
+class hPutChess extends MMethods{
+	
+	@Override
+	public Object process(Object e) {
+		Controller.handleEvent(ExchangeCommands.PUTCHESS);
+		return e;
+	}
+}

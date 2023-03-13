@@ -1,0 +1,31 @@
+import uml;
+import UMLLabProfile;
+import PHPProfile;
+
+extension Utility reexport;
+
+// 
+String getFileName(Classifier this) :
+	if CustomFileName.isInstance(this) then
+		((CustomFileName)this).fileName
+	else
+		getQualifiedName("/")
+;
+
+String phpTypeString(Type this, Object elemContext) :
+    if elemContext.getBooleanAlias(true) then
+        ( 
+        // add import if not primitive
+        if 
+            !PrimitiveType.isInstance(this) 
+            && 
+            this.package != null 
+        then
+            (this.scopeAddImport() -> "")
+        else
+            ("")
+        ) 
+        + this.name
+    else
+        this.package.getQualifiedName("\\") + "\\" + this.name
+;

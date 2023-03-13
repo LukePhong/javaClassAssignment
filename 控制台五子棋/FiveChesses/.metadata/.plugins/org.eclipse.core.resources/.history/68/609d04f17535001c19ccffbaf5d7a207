@@ -1,0 +1,14 @@
+package board;
+
+public class Player{
+	
+	private final int player_wight=0;
+	private final int player_black=1;
+	private final int empty=-1;
+	public int p;
+	
+	public Player() {
+		p=empty;
+	}
+}
+

@@ -1,0 +1,88 @@
+«EXTENSION Utility»
+«IMPORT uml»
+«IMPORT UMLLabProfile»
+
+«EXTENSION java::standard::classDiag::classifier::ClassifierExtensions»
+
+«DEFINE file(StyledElement style) FOR Classifier»
+«scopeEnter()»
+«FILE getQualifiedName(".") + ".JDTDisassembled"»
+«EXPAND classifier(style) FOR this»
+«ENDFILE»
+«ENDDEFINE»
+
+«DEFINE classifier(StyledElement style) FOR Classifier»
+«visibilityString()» «""» 
+«IF isAbstract»abstract «ENDIF»
+«IF isStatic()»static «ENDIF»
+«IF isFinal()»final «ENDIF»
+«IF isStrictFP()»strictfp «ENDIF»
+«IF Enumeration.isInstance(this)»enum «ELSEIF isInterface()»«IF AnnotationDefinition.isInstance(this)»@«ENDIF»interface «ELSEIF isClass()»class «ELSE»«fail("wrong type")»«ENDIF»
+«EXPAND Type::typeName FOR this» «""»
+«IF getGeneralization() != null»
+ extends «EXPAND Type::typeName FOR getSuperClass()»
+«ENDIF»
+«IF !getInterfaces().isEmpty» «extendsClause()» «""-»
+«FOREACH getInterfaces() AS relationship SEPARATOR ", "»
+«IF relationship.target.size > 0»
+«LET (Classifier) relationship.target.fromSingleton() AS super»
+«EXPAND Type::typeName FOR super»
+«ENDLET»
+«ENDIF»
+«ENDFOREACH»
+«ENDIF»
+{
+«REM»Support for enums«ENDREM»
+«IF Enumeration.isInstance(this)»
+«LET (Enumeration) this AS enum»
+«FOREACH enum.ownedLiteral AS literal»
+public static final enum «EXPAND Type::typeName FOR this» «literal.name»
+«LET (Expression)literal.specification AS expression»
+«IF expression != null && !expression.operand.isEmpty»
+(«""-»
+«FOREACH expression.operand AS operand SEPARATOR ", "»
+«operand.stringValue()»
+«ENDFOREACH»
+)«""-»
+«ENDIF»
+«ENDLET»
+;
+«ENDFOREACH»
+«ENDLET»
+«ENDIF»
+«REM»and now the other member«ENDREM»
+«FOREACH (List[MemberFragmentTuple]) getListAlias(getListOfMemberFragmentTuple()) AS fragment»
+«LET fragment.element AS member»
+«IF Property.isInstance(member)»
+«LET (Property) member AS prop»
+«REM»
+«IF prop.association == null || prop.association.isReference()»
+«ENDREM»
+«EXPAND Attribute::attribute(prop.style(), this, fragment) FOR prop»
+«REM»
+«ELSE»
+«IF prop.getOtherEnd() != null»
+«EXPAND Association::role(prop.style(), this, fragment) FOR prop»
+«ENDIF»
+«ENDIF»
+«ENDREM»
+«ENDLET»
+«ELSEIF Operation.isInstance(member)»
+«LET (Operation) member AS op»
+«EXPAND Operation::operation(op.style(), this, fragment) FOR op»
+«ENDLET»
+«REM»
+«ELSEIF Classifier.isInstance(member) && !Behavior.isInstance(member) && member != this && !member.hasKeyword("sameFile")»
+«LET (Classifier) member AS nestedClassifier»
+«EXPAND classifier(nestedClassifier.style()) FOR nestedClassifier»
+«ENDLET»
+«ELSEIF member==this»
+«EXPAND additionalMember(style, this, fragment) FOR this»
+«ELSEIF EmptyStatement.isInstance(member) && fragment.partId == -42»
+«EXPAND emptyMember(fragment) FOR (EmptyStatement) member»
+«ENDREM»
+«ENDIF»
+«ENDLET»
+«ENDFOREACH»
+}
+«ENDDEFINE»

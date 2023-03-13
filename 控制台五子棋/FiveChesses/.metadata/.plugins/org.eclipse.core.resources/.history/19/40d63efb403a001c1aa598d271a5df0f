@@ -1,0 +1,64 @@
+package view;
+
+import board.Conditions;
+import control.Controller;
+import util.*;
+
+public abstract class VMethods implements Processor{
+	
+}
+
+class hQuit extends VMethods{
+	
+	@Override
+	public Object process(Object e) {
+		System.out.println("Quiting");
+		System.exit(0);
+		return e;
+	}
+}
+
+class hWrongCommand extends VMethods{
+	
+	@Override
+	public Object process(Object e) {
+		System.out.println("No this Command! Check Your Input!");
+		return e;
+	}
+}
+
+class hWrongNum extends VMethods{
+	
+	@Override
+	public Object process(Object e) {
+		System.out.println((Exception)e);
+		return e;
+	}
+}
+
+class hHelp extends VMethods{
+	
+	@Override
+	public Object process(Object e) {
+		System.out.println("This is HELP");
+		return e;
+	}
+}
+
+class hPutChess extends VMethods{
+	
+	@Override
+	public Object process(Object e) {
+		
+		Object isCheck;
+		try {
+			isCheck=(WinCheck)Controller.handleEvent(ExchangeCommands.PUTCHESS,(Event)e);
+		} catch (IllegalArgumentException e2) {
+			return VProcess.process(new hWrongNum(), e2);
+		}
+		
+		EventDeliver.processExchangeCommand(ExchangeCommands.SHOW, null);
+				
+		return isCheck;
+	}
+}

@@ -1,0 +1,41 @@
+package Bean;
+
+import java.util.Objects;
+
+public class Disk {
+	private String name;
+	private double money;
+	private int num;
+	
+	public String getName() {
+		return name;
+	}
+	public double getMoney() {
+		return money;
+	}
+	public int getNum() {
+		return num;
+	}
+	@Override
+	public int hashCode() {
+		return Objects.hash(money, name, num);
+	}
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Disk other = (Disk) obj;
+		return Double.doubleToLongBits(money) == Double.doubleToLongBits(other.money)
+				&& Objects.equals(name, other.name) && num == other.num;
+	}
+	@Override
+	public String toString() {
+		return "Disk [name=" + name + ", money=" + money + ", num=" + num + "]";
+	}
+	
+	
+}

@@ -1,0 +1,14 @@
+import uml;
+
+/**
+ * A property usually consists of a declaration as well as two access methods (getter and setter).
+ * This extension defines the default location for JPA annotations on newly generted elements.
+ *
+ * Possible values are:
+ * - "field-access"
+ * - "property-access-getter"
+ * - "property-access-setter"
+ */
+String defaultAnnotationStyle(Property this) : 
+    "property-access-getter"
+;

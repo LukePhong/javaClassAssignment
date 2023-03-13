@@ -1,0 +1,26 @@
+import uml;
+import Persistency;
+
+extension java::standard::classDiag::property::AttributeExtensions reexport;
+extension java::jpa1::classDiag::Utility reexport;
+extension Utility reexport;
+
+boolean isTransient( Property this ) :
+   getAppliedStereotype("Persistency::Transient") != null;
+
+String removeIfTrue( List[int] list, int index, boolean condition ) :
+    if condition then 
+        (list.remove(index) -> "")
+    else
+        "";
+
+private int getFrameworkOrdinal(Element this) :
+	switch (((JPA1StyledElement) style()).framework) {
+		case FrameworkType::undefined : 0
+		case FrameworkType::jpa : 1
+		case FrameworkType::hibernate : 2
+		default : -1
+	};
+
+Void addImportWithAlternatives(Element this, List[String] qualifiedNames) :
+    addImportWithAlternatives(qualifiedNames, getFrameworkOrdinal()) -> null;

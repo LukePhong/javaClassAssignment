@@ -1,0 +1,121 @@
+«IMPORT uml»
+«IMPORT UMLLabProfile»
+
+«IMPORT java::standard::classDiag::assoc»
+«IMPORT java::standard::classDiag::classifier»
+
+«EXTENSION java::standard::classDiag::assoc::AssociationExtensions»
+«EXTENSION java::standard::classDiag::classifier::ClassifierExtensions»
+
+«DEFINE role(Simple style, Classifier parent, MemberFragmentTuple fragment) FOR Property»
+«LET fragment.partId AS partId»
+«IF partId == 0»
+«EXPAND roleDeclaration(style, parent) FOR this»
+«ELSEIF partId == 1»
+«EXPAND roleSetter(style, parent) FOR this»
+«ELSEIF partId == 2»
+«EXPAND roleGetter(style, parent) FOR this»
+«ENDIF»
+«ENDLET»
+«ENDDEFINE»
+
+«DEFINE roleDeclaration(Simple style, Classifier parent) FOR Property»
+«IF isPrimitive(this.type) && !isMultivalued()»«fail("need a complex type")»«ENDIF»
+«EXPAND File::import(style) FOR type»
+«IF isMultivalued()»
+«EXPAND toManyDeclaration(style, getOtherEnd(), parent) FOR this»
+«ELSE»
+«EXPAND toOneDeclaration(style, getOtherEnd(), parent) FOR this»
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE roleSetter(Simple style, Classifier parent) FOR Property»
+«IF isPrimitive(this.type) && !isMultivalued()»«fail("need a complex type")»«ENDIF»
+«IF isMultivalued()»
+«EXPAND toManySetter(style, getOtherEnd(), parent) FOR this»
+«ELSE»
+«EXPAND toOneSetter(style, getOtherEnd(), parent) FOR this»
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE roleGetter(Simple style, Classifier parent) FOR Property»
+«IF isPrimitive(this.type) && !isMultivalued()»«fail("need a complex type")»«ENDIF»
+«IF isMultivalued()»
+«EXPAND toManyGetter(style, getOtherEnd(), parent) FOR this»
+«ELSE»
+«EXPAND toOneGetter(style, getOtherEnd(), parent) FOR this»
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE toOneDeclaration(Simple style, Property partnerRole, Classifier parent) FOR Property»
+«IF !parent.isInterface()»
+private «type.name» «name»;
+
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE toOneSetter(Simple style, Property partnerRole, Classifier parent) FOR Property»
+«visibilityString()» void set«methodSuffix()»(«IF getBooleanAlias(false)»final «ENDIF»«type.name» «name»)«""»
+«IF parent.isInterface()»
+; // getter«REM»see #1018«ENDREM»
+
+«ELSE»
+ {
+«IF getBooleanAlias(true)»   this.«ENDIF»«name» = «name»;
+} // getter«REM»see #1018«ENDREM»
+
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE toOneGetter(Simple style, Property partnerRole, Classifier parent) FOR Property»
+«visibilityString()» «type.name» get«methodSuffix()»()«""»
+«IF parent.isInterface()»
+;
+
+«ELSE»
+ {
+   return «IF getBooleanAlias(true)»this.«ENDIF»«name»;
+}
+
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE toManyDeclaration(Simple style, Property partnerRole, Classifier parent) FOR Property»
+«IF !parent.isInterface()»
+private «EXPAND AssociationContainer::container FOR this» «pluralizeIfNeeded()»;
+
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE toManySetter(Simple style, Property partnerRole, Classifier parent) FOR Property»
+«LET getWordAlias("value") AS value»
+«visibilityString()» void set«methodSuffix()»(«IF getBooleanAlias(false)»final «ENDIF»«EXPAND AssociationContainer::container FOR this» «value»)«""»
+«IF parent.isInterface()»
+;
+
+«ELSE»
+ {
+«IF getBooleanAlias(true)»   this.«ENDIF»«pluralizeIfNeeded()» = «value»;
+}
+
+«ENDIF»
+«ENDLET»
+«ENDDEFINE»
+
+«DEFINE toManyGetter(Simple style, Property partnerRole, Classifier parent) FOR Property»
+«visibilityString()» «EXPAND AssociationContainer::container FOR this» get«methodSuffix()»()«""»
+«IF parent.isInterface()»
+; // getter«REM»see #1018«ENDREM»
+
+«ELSE»
+ {
+«IF hasKeyword("lazy_init")»
+   if («IF getBooleanAlias(true)»this.«ENDIF»«pluralizeIfNeeded()» == null) {
+   «IF getBooleanAlias(true)»      this.«ENDIF»«pluralizeIfNeeded()» = new «EXPAND AssociationContainer::defaultContainer FOR this»();
+   }
+«ENDIF»
+   return «IF getBooleanAlias(true)»this.«ENDIF»«pluralizeIfNeeded()»;
+} // getter«REM»see #1018«ENDREM»
+
+«ENDIF»
+«ENDDEFINE»

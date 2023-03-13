@@ -1,0 +1,13 @@
+«IMPORT uml»
+«IMPORT UMLLabProfile»
+
+«EXTENSION Utility»
+«EXTENSION PHP::standard::structure::Attribute»
+
+«DEFINE role (Classifier parent,Simple style,MemberFragmentTuple fragment) FOR Property»
+«IF fragment.partId==0»
+«IF falseForReverseTrueForForward()»
+«EXPAND Attribute::attribute(parent, style, fragment) FOR this»
+«ENDIF»
+«ENDIF»
+«ENDDEFINE»

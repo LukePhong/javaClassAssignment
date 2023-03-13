@@ -1,0 +1,91 @@
+«IMPORT uml»
+«IMPORT UMLLabProfile»
+
+«EXTENSION Utility»
+
+«DEFINE type FOR Type»
+«FILE "internal" buffer»
+«EXPAND type(this.style()) FOR this»
+«ENDFILE»
+«ENDDEFINE»
+
+«DEFINE qualifiedType FOR Type»
+«FILE "internal" buffer»
+«EXPAND qualifiedType(this.style()) FOR this»
+«ENDFILE»
+«ENDDEFINE»
+
+«DEFINE typeParameter FOR TypeParameterDeclaration»
+«FILE "internal" buffer»
+«EXPAND typeParameter(this.style()) FOR this»
+«ENDFILE»
+«ENDDEFINE»
+
+«DEFINE operation FOR Operation»
+«FILE "internal" buffer»
+«EXPAND operation(this.style()) FOR this»
+«ENDFILE»
+«ENDDEFINE»
+
+«DEFINE parameter FOR Parameter»
+«FILE "internal" buffer»
+«EXPAND parameter(this.style()) FOR this»
+«ENDFILE»
+«ENDDEFINE»
+
+«REM»property access«ENDREM»
+«DEFINE property_accessor_1 FOR Property»
+«FILE "internal" buffer»
+«EXPAND property_accessor_1(this.style()) FOR this»
+«ENDFILE»
+«ENDDEFINE»
+
+«REM»property getter«ENDREM»
+«DEFINE property_accessor_2 FOR Property»
+«FILE "internal" buffer»
+«EXPAND property_accessor_2(this.style()) FOR this»
+«ENDFILE»
+«ENDDEFINE»
+
+«REM»property setter«ENDREM»
+«DEFINE property_accessor_3 FOR Property»
+«FILE "internal" buffer»
+«EXPAND property_accessor_3(this.style()) FOR this»
+«ENDFILE»
+«ENDDEFINE»
+
+«DEFINE type(StyledElement style) FOR Type»
+«name»
+«ENDDEFINE»
+
+«DEFINE qualifiedType(StyledElement style) FOR Type»
+«this.package.getQualifiedName(".")».«this.name»
+«ENDDEFINE»
+
+«DEFINE typeParameter(StyledElement style) FOR TypeParameterDeclaration»
+«name»
+«ENDDEFINE»
+
+«DEFINE operation(StyledElement style) FOR Operation»
+«name»
+«ENDDEFINE»
+
+«DEFINE parameter(StyledElement style) FOR Parameter»
+«name»
+«ENDDEFINE»
+
+«REM»property access«ENDREM»
+«DEFINE property_accessor_1(StyledElement style) FOR Property»
+«name»
+«ENDDEFINE»
+
+«REM»property getter«ENDREM»
+«DEFINE property_accessor_2(StyledElement style) FOR Property»
+«IF type.isPrimitiveType("boolean")»is«ELSE»get«ENDIF»«name.toFirstUpper()»
+«ENDDEFINE»
+
+«REM»property setter«ENDREM»
+«DEFINE property_accessor_3(StyledElement style) FOR Property»
+set«name.toFirstUpper()»
+«ENDDEFINE»
+

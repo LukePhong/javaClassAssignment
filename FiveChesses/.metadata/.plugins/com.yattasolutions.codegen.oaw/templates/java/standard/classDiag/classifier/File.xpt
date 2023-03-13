@@ -1,0 +1,171 @@
+«IMPORT uml»
+«IMPORT UMLLabProfile»
+
+«IMPORT java::standard»
+«IMPORT java::standard::classDiag::property»
+«IMPORT java::standard::classDiag::operation»
+«IMPORT java::standard::classDiag::assoc»
+«IMPORT java::standard::classDiag::classifier»
+«EXTENSION java::standard::classDiag::classifier::ClassifierExtensions»
+
+«DEFINE import FOR Classifier»
+«FOREACH scopeGetImports() AS import»
+«IF falseForReverseTrueForForward() && String.isInstance(import)»
+import «import»;
+«ELSEIF Import.isInstance(import)»
+«LET ((Import) import).importedElement AS e»
+«IF Classifier.isInstance(e)»
+«IF ((Import) import).staticImport»
+«IF ((Import) import).staticText == null»
+import static «((Classifier) e).getQualifiedName(".")».*;
+«ELSE»
+import static «((Classifier) e).getQualifiedName(".")».«((Import) import).staticText»;
+«ENDIF»
+«ELSE»
+import «((Classifier) e).getQualifiedName(".")»;
+«ENDIF»
+«ELSEIF Package.isInstance(e)»
+import «((Package) e).getQualifiedName(".")».*;
+«ENDIF»
+«ENDLET»
+«ENDIF»
+«ENDFOREACH»
+«ENDDEFINE»
+
+«DEFINE file(StyledElement style) FOR Classifier»
+«scopeEnter()»
+«FILE getQualifiedName("/") + ".java"»
+«LET package.getQualifiedName(".") AS packageName»
+«IF packageName != null»«REM»TODO does not work yet package != getModel()«ENDREM»
+package «packageName»;
+
+«ENDIF»
+«FILE "deferImports" defer»
+«EXPAND import FOR this»
+«scopeLeave()»
+
+«ENDFILE»
+«ENDLET»
+«EXPAND classifier(style) FOR this»
+«FOREACH ownedElement AS nested»
+«IF Classifier.isInstance(nested) && nested.hasKeyword("sameFile")»
+«EXPAND classifier(nested.style()) FOR (Classifier) nested»
+«ENDIF»
+«ENDFOREACH»
+«ENDFILE»
+«EXPAND additionalFiles(style) FOR this»
+«ENDDEFINE»
+
+
+«DEFINE additionalFiles(StyledElement style) FOR Classifier»
+«ENDDEFINE»
+
+«DEFINE classifier(StyledElement style) FOR Classifier»
+«EXPAND java::standard::Comment::comment FOR this»
+«REM»«EXPAND annotations(style) FOR this»«ENDREM»
+«visibilityString()» «IF isAbstract && !isInterface()»abstract «ENDIF»«IF isStatic()»static «ENDIF»
+«IF isFinal()»final «ENDIF»
+«getClassOrInterfaceString()» «EXPAND Type::type(this) FOR this»
+«LET getGeneralization() AS generalization»
+«IF generalization != null && !isInterface()»
+ extends «EXPAND Type::typeWithAnnotation(generalization) FOR generalization.general»
+«ENDIF»
+«ENDLET»
+«IF !getInterfaces().isEmpty» «extendsClause()» «""-»
+«FOREACH getInterfaces() AS relationship SEPARATOR ", "»
+«IF relationship.target.size > 0»
+ «EXPAND Type::typeWithAnnotation(relationship) FOR (Classifier) relationship.target.fromSingleton()»
+«ENDIF»
+«ENDFOREACH»
+«ENDIF»
+ {
+«IF isEnum() && !isInterface()»«REM»TODO !isInterface() should not be needed«ENDREM»
+«LET (Enumeration) this AS enum»
+«FOREACH enum.ownedLiteral AS literal SEPARATOR ", "»
+«literal.name»
+«IF Expression.isInstance(literal.specification)»
+«LET (Expression)literal.specification AS expression»
+«IF expression != null && !expression.operand.isEmpty»
+(«""-»
+«FOREACH expression.operand AS operand SEPARATOR ", "»
+«operand.stringValue()»
+«ENDFOREACH»
+)«""-»
+«ENDIF»
+«ENDLET»
+«ENDIF»
+«ENDFOREACH»
+;
+
+«ENDLET»
+«ENDIF»
+«EXPAND classifierChildren(style) FOR this»
+}
+«ENDDEFINE»
+
+«REM» TODO: This feature is not yet completed«ENDREM»
+«DEFINE annotations(StyledElement style) FOR Classifier»
+«REM»
+This template is a placeholder for code styles that contribute annotations to the classifier.
+«ENDREM»
+«IF hasKeyword("placeholder")»«fail("this is only a placeholder")»«ENDIF»
+«ENDDEFINE»
+
+«DEFINE classifierChildren(StyledElement style) FOR Classifier»
+«FILE "indentRegion0_742f73e0" buffer»
+«REM» collect members (properties and operations) and nested classifiers: TODO add nestedClassifier to the list of member«ENDREM»
+«FOREACH (List[MemberFragmentTuple]) getListAlias(getListOfMemberFragmentTuple()) AS fragment»
+«LET fragment.element AS member»
+«IF Property.isInstance(member)»
+«LET (Property) member AS prop»
+«IF prop.association == null || prop.association.isReference()»
+«EXPAND Attribute::attribute(prop.style(), this, fragment) FOR prop»
+«ELSE»
+«IF prop.getOtherEnd() != null»
+«EXPAND Association::role(prop.style(), this, fragment) FOR prop»
+«ENDIF»
+«ENDIF»
+«ENDLET»
+«ELSEIF Operation.isInstance(member)»
+«LET (Operation) member AS op»
+«EXPAND Operation::operation(op.style(), this, fragment) FOR op»
+«ENDLET»
+«ELSEIF Classifier.isInstance(member) && !Behavior.isInstance(member) && member != this && !member.hasKeyword("sameFile")»
+«LET (Classifier) member AS nestedClassifier»
+«EXPAND classifier(nestedClassifier.style()) FOR nestedClassifier»
+«ENDLET»
+«ELSEIF member==this»
+«EXPAND additionalMember(style, this, fragment) FOR this»
+«ELSEIF EmptyStatement.isInstance(member) && fragment.partId == -42»
+«EXPAND emptyMember(fragment) FOR (EmptyStatement) member»
+«ENDIF»
+«ENDLET»
+«ENDFOREACH»
+«ENDFILE»
+«getGlobalVar("indentRegion0_742f73e0").indentWithRanges("   ")»
+«ENDDEFINE»
+
+«DEFINE import(StyledElement style) FOR Type»
+«IF this != null && !PrimitiveType.isInstance(this) && !this.name.contains(".")»
+«IF this.package == null || this.package.getQualifiedName(".") != "java.lang"»«REM»FIXME hotfix for #1495 - ignore java.lang imports«ENDREM»
+«scopeAddImport(this)»
+«ENDIF»
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE additionalMember(StyledElement style, Classifier parent, MemberFragmentTuple fragment) FOR Classifier»
+«IF fragment.partId==0»
+«EXPAND additionalMember_FRG_Single(style, parent) FOR this»
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE additionalMember_FRG_Single(StyledElement style, Classifier parent)  FOR Classifier»
+«REM»
+This template is a placeholder for other styles that contribute additional member to the classifier's children.
+«ENDREM»
+«IF hasKeyword("placeholder")»«fail("this is only a placeholder")»«ENDIF»
+«ENDDEFINE»
+
+«DEFINE emptyMember(MemberFragmentTuple fragment) FOR EmptyStatement»
+;«""»
+«ENDDEFINE»

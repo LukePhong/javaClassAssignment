@@ -1,0 +1,147 @@
+«IMPORT uml»
+«IMPORT UMLLabProfile»
+
+«EXTENSION Utility»
+«EXTENSION java::standard::classDiag::assoc::AssociationExtensions»
+
+«IMPORT java::standard::classDiag::assoc»
+
+«REM»
+This template generates a type string. If the upper value is -1, the type is boxed in an array or a collection class.
+@Visibility: Public
+«ENDREM»
+«DEFINE typedMultiplicityElement FOR MultiplicityElement»
+«EXPAND typedMultiplicityElement(true) FOR this»
+«ENDDEFINE»
+
+«REM»
+This template generates a type string. If the upper value is -1, the type is boxed in an array or a collection class.
+@param arrayOnType if the given MultiplicityElement is multivalued and has an Array stereotype applied, braces are generated just after the type name.
+@Visibility: Public
+«ENDREM»
+«DEFINE typedMultiplicityElement(Boolean arrayOnType) FOR MultiplicityElement»
+«LET ((TypedElement)this).type AS myType»
+«IF myType==null»
+String/*No type specified!*/«""»
+«ELSE»
+«IF upper==1»«REM»generate type declaration only«ENDREM»
+«IF Property.isInstance(this) && ((Property)this).isQualified()»
+«LET (Property)this AS property»
+Map<«EXPAND AssociationContainer::containeeType(property.getQualifier().type) FOR property.getQualifier()», «EXPAND AssociationContainer::containeeType(property.type) FOR property»>«""-»
+«ENDLET»
+«ELSE»
+«EXPAND java::standard::Type::type(this) FOR myType»
+«ENDIF»
+«ELSEIF isMultivalued()»«REM»generate collection container or an array of elements«ENDREM»
+«IF Array.isInstance(this)»
+«EXPAND java::standard::Type::type(this) FOR myType»
+«IF getBooleanAlias(false) && Parameter.isInstance(this)»
+...
+«ELSE»
+«IF arrayOnType»
+«EXPAND arrayBraces FOR this»
+«ENDIF»
+«ENDIF»
+«ELSE»
+«EXPAND java::standard::classDiag::assoc::AssociationContainer::container FOR this»
+«ENDIF»
+«ELSE»
+«fail("This branch is not possible")»
+«ENDIF»
+«ENDIF»
+«ENDLET»
+«ENDDEFINE»
+
+«REM»
+This template generates a type string. If the upper value is -1, the type is boxed in an array or a collection class.
+@Visibility: Public
+«ENDREM»
+«DEFINE operationReturnType FOR Operation»
+«IF upper==1»«REM»generate type declaration only«ENDREM»
+«EXPAND java::standard::Type::typeOrVoid(type) FOR this»
+«ELSEIF upper==-1»«REM»generate collection container or an array of elements«ENDREM»
+«IF Array.isInstance(this)»
+«EXPAND java::standard::Type::typeOrVoid(type) FOR this»«EXPAND arrayBraces FOR this»
+«ELSE»
+«EXPAND java::standard::classDiag::assoc::AssociationContainer::container FOR this»
+«ENDIF»
+«ELSE»
+«fail("This codestyle doesn't support an upper value == 0 or >1 for operation return types")»
+«ENDIF»
+«ENDDEFINE»
+
+«REM»
+This template generates array braces as defined by the Array stereotype.
+@Visibility: Public
+«ENDREM»
+«DEFINE arrayBraces FOR Element»
+«EXPAND arrayBraces(((Array)this).dimensions, "[]")»
+«ENDDEFINE»
+
+«REM»
+This template generates array braces as defined by the Array stereotype.
+@Visibility: Public
+«ENDREM»
+«DEFINE arrayBraces(String lastComponentString) FOR Element»
+«EXPAND arrayBraces(((Array)this).dimensions, lastComponentString)»
+«ENDDEFINE»
+
+«REM»
+This template generates array braces as defined the parameter dim.
+@Parameter: dim specifies how many braces are to be generated.
+@Visibility: Private
+«ENDREM»
+«DEFINE arrayBraces(Integer dim, String lastComponentString) FOR Element»
+«IF dim==0»
+«lastComponentString»«""»
+«ELSEIF dim==1»
+«lastComponentString»«""»
+«ELSEIF dim==2»
+[]«lastComponentString»«""»
+«ELSEIF dim==3»
+[][]«lastComponentString»«""»
+«ELSEIF dim==4»
+[][][]«lastComponentString»«""»
+«ELSEIF dim==5»
+[][][][]«lastComponentString»«""»
+«ELSEIF dim==6»
+[][][][][]«lastComponentString»«""»
+«ELSE»
+/*#1479: unsupported-array-dimensions: «dim» */«""»
+«REM»TODO #1479 - TODO: consider «lastComponentString»
+«FOREACH 2.upTo(dim) AS i»
+[]«""»
+«ENDFOREACH»
+«ENDREM»
+«ENDIF»
+«ENDDEFINE»
+
+«REM»
+TODO workaround for #2053
+«ENDREM»
+«DEFINE arrayBracesWorkaroundForLegacyParameter FOR Parameter»
+«LET ((Array)this).dimensions AS dim»
+«IF dim==0»
+...«""»
+«ELSEIF dim==1»
+...«""»
+«ELSEIF dim==2»
+[]...«""»
+«ELSEIF dim==3»
+[][]...«""»
+«ELSEIF dim==4»
+[][][]...«""»
+«ELSEIF dim==5»
+[][][][]...«""»
+«ELSEIF dim==6»
+[][][][][]...«""»
+«ELSE»
+/*#1479: unsupported-array-dimensions: «dim» */«""»
+«REM»TODO #1479 - TODO: consider «lastComponentString»
+«FOREACH 2.upTo(dim) AS i»
+[]«""»
+«ENDFOREACH»
+«ENDREM»
+«ENDIF»
+«ENDLET»
+«ENDDEFINE»

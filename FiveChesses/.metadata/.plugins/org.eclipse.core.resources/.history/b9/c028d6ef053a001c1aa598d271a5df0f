@@ -1,0 +1,44 @@
+package view;
+
+import control.Controller;
+import util.*;
+
+public abstract class VMethods implements Processor{
+	
+}
+
+class hQuit extends VMethods{
+	
+	@Override
+	public Object process(Object e) {
+		System.out.println("Quiting");
+		return e;
+	}
+}
+
+class hWrongCommand extends VMethods{
+	
+	@Override
+	public Object process(Object e) {
+		System.out.println("No this Command! Check Your Input!");
+		return e;
+	}
+}
+
+class hHelp extends VMethods{
+	
+	@Override
+	public Object process(Object e) {
+		System.out.println("This is HELP");
+		return e;
+	}
+}
+
+class hPutChess extends VMethods{
+	
+	@Override
+	public Object process(Object e) {
+		Controller.handleEvent(ExchangeCommands.PUTCHESS,(Event)e);
+		return e;
+	}
+}

@@ -1,0 +1,44 @@
+«IMPORT uml»
+«IMPORT UMLLabProfile»
+
+«EXTENSION Utility»
+«EXTENSION PHP::standard::structure::Operation»
+
+«DEFINE operation(Classifier parent, StyledElement style, MemberFragmentTuple fragment) FOR Operation»
+«EXPAND operation(parent,style) FOR this»
+«ENDDEFINE»
+
+«DEFINE operation(Classifier parent, StyledElement style) FOR Operation»
+«EXPAND PHP::standard::Comment::comment»
+«LET true AS omitSeperatorOnEmptyIteration»
+«FOREACH getIntListAlias(0.upTo(3)) AS groupCounter0»
+«IF groupCounter0 == 0»
+«visibilityString(this)»«""»
+«ELSEIF groupCounter0 == 1»
+«IF isAbstract»abstract «ENDIF»
+«ELSEIF groupCounter0 == 2»
+«IF isStatic»static «ENDIF»
+«ELSEIF groupCounter0 == 3»
+«IF isLeaf»final «ENDIF»
+«ENDIF»
+«ENDFOREACH»
+«ENDLET»
+function «IF hasKeyword("reference")»&«ENDIF»«name»«""-»
+(«EXPAND parameters(parent, style)»)«""»
+«IF !Interface.isInstance(parent) && !this.isAbstract»
+ {
+«indent(getBody(), "   ")»
+}
+«ELSE»
+;
+«ENDIF»
+
+«ENDDEFINE»
+
+«DEFINE parameters(Classifier parent, StyledElement style) FOR Operation»
+«EXPAND parameter(parent) FOREACH ownedParameter.select(e|e.direction == ParameterDirectionKind::in && e.name != null) SEPARATOR ", "»
+«ENDDEFINE»
+
+«DEFINE parameter(Classifier parent) FOR Parameter»
+«EXPAND Type::phpType(parent)» «IF hasKeyword("reference")»&«ENDIF»$«name»«IF ^default != null» = «^default»«ENDIF»
+«ENDDEFINE»

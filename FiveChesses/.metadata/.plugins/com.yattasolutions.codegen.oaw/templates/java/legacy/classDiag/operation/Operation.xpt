@@ -1,0 +1,82 @@
+«IMPORT uml»
+«IMPORT UMLLabProfile»
+
+«IMPORT java::standard»
+«IMPORT java::standard::classDiag::classifier»
+«IMPORT java::standard::classDiag::operation»
+
+«EXTENSION Utility»
+«EXTENSION java::legacy::classDiag::operation::OperationExtensions»
+«EXTENSION java::legacy::classDiag::classifier::ClassifierExtensions»
+«EXTENSION java::standard::classDiag::classifier::ClassifierExtensions»
+
+«DEFINE operation(LegacyStyledElement style, Classifier parent, MemberFragmentTuple fragment) FOR Operation»
+«EXPAND operation(parent) FOR this»
+«ENDDEFINE»
+
+«REM»used by Attribute.xpt for legacy getter/setter«ENDREM»
+«DEFINE operation(Classifier parent) FOR Operation»
+«LET (LegacyStyledElement)style() AS style»
+«IF initializer()» 
+«optionalForInterface(isStatic, "static", parent)»
+«ELSE»
+«FOREACH getListAliasWithAnnotations(7) AS modifier»
+«IF Annotation.isInstance(modifier)»
+«EXPAND java::legacy::classDiag::Annotation::annotation(style) FOR (Annotation) modifier»
+«ELSE»
+«getModifier((int) modifier, parent)»
+«ENDIF»
+«ENDFOREACH»
+«EXPAND TypeParameterDeclaration::type(type) FOR this»
+«IF !constructor(parent)»
+«REM»«EXPAND Type::genericDecl FOR this»«ENDREM»
+ «EXPAND java::standard::Multiplicity::operationReturnType FOR this»
+«ENDIF»
+ «name» («EXPAND parameters(style) FOR this»)«""-»
+ «EXPAND java::standard::classDiag::operation::Operation::throws(style) FOR this»
+«ENDIF»
+«IF isNative() || (isAbstract || parent.isInterface()) && !initializer() && !hasKeyword("defender")»
+;
+«ELSE»
+
+{
+«LET getBody() AS body»
+«REM»
+«IF body.length == 0»
+   // TODO implement this operation
+   throw new UnsupportedOperationException("not implemented");
+«ELSE»
+«ENDREM»
+«indent(body, "   ")»
+«REM»
+«ENDIF»
+«ENDREM»
+«ENDLET»
+}
+«ENDIF»
+«ENDLET»
+«ENDDEFINE»
+
+«DEFINE parameters(LegacyStyledElement style) FOR Operation»
+«EXPAND parameter(style) FOREACH ownedParameter.select(e|e.direction == ParameterDirectionKind::in && e.name != null) SEPARATOR ", "»
+«ENDDEFINE»
+
+«DEFINE parameter(LegacyStyledElement style) FOR Parameter»
+«FOREACH getListAliasWithAnnotations(1) AS modifier»
+«IF modifier == 1»
+«IF hasKeyword("final")»final «ENDIF»
+«ELSEIF Annotation.isInstance(modifier)»
+«EXPAND java::legacy::classDiag::Annotation::annotation(style) FOR (Annotation) modifier»
+«ENDIF»
+«ENDFOREACH»
+«LET getBooleanAlias(true) AS arrayOnType»
+«REM» TODO #1519
+«EXPAND java::standard::Multiplicity::typedMultiplicityElement(arrayOnType) FOR this» «name»
+«IF !arrayOnType && upper != 1 && isMultivalued() && Array.isInstance(this)»«EXPAND java::standard::Multiplicity::arrayBraces FOR this»«ENDIF»
+«ENDREM»
+«EXPAND java::standard::Type::typeOrDefault(type) FOR this»
+«IF arrayOnType  && upper == -1 && Array.isInstance(this)»«IF getBooleanAlias(true)»«EXPAND java::standard::Multiplicity::arrayBracesWorkaroundForLegacyParameter»«ELSE»«EXPAND java::standard::Multiplicity::arrayBraces»«ENDIF»«ENDIF»
+ «name»
+«IF !arrayOnType && upper == -1 && Array.isInstance(this)»«EXPAND java::standard::Multiplicity::arrayBraces FOR this»«ENDIF»
+«ENDLET»
+«ENDDEFINE»

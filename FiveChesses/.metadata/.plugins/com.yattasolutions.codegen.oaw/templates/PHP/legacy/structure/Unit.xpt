@@ -1,0 +1,57 @@
+«IMPORT uml»
+«IMPORT UMLLabProfile»
+«IMPORT PHPProfile»
+
+«EXTENSION Utility»
+
+«REM»comment
+«DEFINE unit(Namespace currentNamespace, LegacyStyledElement style) FOR Classifier»
+«IF CustomFileName.isInstance(this)»
+«FILE ((CustomFileName)this).fileName + ".php"»
+<?«OPTIONAL»php «ENDOPTIONAL»
+«SKIP»declare(encoding='UTF-8');«ENDSKIP»
+«EXPAND classifier(currentNamespace, style)»
+«FOREACH ownedElement AS nested»
+«IF Classifier.isInstance(nested) && nested.hasKeyword("sameFile")»
+«EXPAND classifier(currentNamespace, nested.style()) FOR (Classifier) nested»
+«ENDIF»
+«ENDFOREACH»
+«OPTIONAL»?>«ENDOPTIONAL»
+«ENDFILE»
+«ENDIF»
+«ENDDEFINE»
+«ENDREM»
+
+
+«REM»
+Generate a whole compilation unit (file), specified with a UML deployment.
+«DEFINE unit FOR DeploymentSpecification»
+«FILE this.fileName + ".php"»
+«EXPAND artifact(getModel())»
+«ENDFILE»
+«ENDDEFINE»
+«ENDREM»
+
+«REM»
+Generate a block within a file, specified with a an artifact within a UML deployment.
+Artifacts with nested artifacts generate a start and end block for their single manifestation.
+Artifacts without nested artifacts generate the whole manifestation including its children.
+«DEFINE artifact(Namespace currentNamespace) FOR Artifact»
+<?«OPTIONAL»php «ENDOPTIONAL»
+«SKIP»declare(encoding='UTF-8');«ENDSKIP»
+«getModel().scopeEnter()»
+«EXPAND classifier(currentNamespace,this.style())»
+«getModel().scopeLeave()»
+
+«OPTIONAL»?>«ENDOPTIONAL»
+«ENDDEFINE»
+«ENDREM»
+
+«REM»
+parse any line of code
+«DEFINE deployedElement(LegacyStyledElement style, Namespace currentNamespace) FOR MemberFragmentTuple»
+«IF this.partId==0»
+«getLineAlias(this.element, "undetectedContent")»
+«ENDIF»
+«ENDDEFINE»
+«ENDREM»

@@ -1,0 +1,25 @@
+«IMPORT uml»
+«IMPORT UMLLabProfile»
+
+«EXTENSION Utility»
+«EXTENSION PHP::standard::structure::Attribute»
+
+
+«DEFINE attribute (Classifier parent,Simple style,MemberFragmentTuple fragment) FOR Property»
+«IF fragment.partId==0»
+«EXPAND PHP::simple::structure::Attribute::attribute_FRG_declaration(parent, style) FOR this»
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE attribute_FRG_declaration(Classifier parent, Simple style)  FOR Property»
+«IF this.isNavigable() && !Interface.isInstance(parent)»
+«EXPAND PHP::standard::Comment::comment»
+«IF isLeaf»
+const «name»«""»
+«ELSE»
+«visibilityString(this)» «IF this.isStatic»static «ENDIF»$«name»«""»
+«ENDIF»
+«IF ^default!=null» = «^default»«ENDIF»;
+
+«ENDIF»
+«ENDDEFINE»

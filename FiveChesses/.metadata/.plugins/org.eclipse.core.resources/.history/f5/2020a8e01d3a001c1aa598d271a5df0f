@@ -1,0 +1,32 @@
+package control;
+
+import control.Controller;
+import mapper.BoardMap;
+import util.*;
+
+public abstract class CMethods implements Processor{
+	
+}
+
+class hQuit extends CMethods{
+	
+	@Override
+	public Object process(Object e) {
+		System.out.println("Quiting");
+		return e;
+	}
+}
+
+class hPutChess extends CMethods{
+	
+	@Override
+	public Object process(Object e) {
+		System.out.println("putchess");
+		try {
+			BoardMap.handleEvent(ExchangeCommands.PUTCHESS,(Event)e);
+		} catch (Exception e2) {
+			// TODO: handle exception
+		}
+		return e;
+	}
+}

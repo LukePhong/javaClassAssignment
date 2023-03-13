@@ -1,0 +1,33 @@
+«IMPORT uml»
+«IMPORT UMLLabProfile»
+«IMPORT ZENDStyle»
+
+«EXTENSION Utility»
+«EXTENSION PHP::standard::structure::Operation»
+
+«DEFINE operation (Classifier parent, ZendStyledElement style) FOR Operation»
+«EXPAND PHP::standard::Comment::comment»
+«LET true AS omitSeperatorOnEmptyIteration»
+«FOREACH getIntListAlias(0.upTo(3)) AS groupCounter0»
+«IF groupCounter0 == 0»
+«visibilityString(this)»«""»
+«ELSEIF groupCounter0 == 1»
+«IF isAbstract»abstract «ENDIF»
+«ELSEIF groupCounter0 == 2»
+«IF isStatic»static «ENDIF»
+«ELSEIF groupCounter0 == 3»
+«IF isLeaf»final «ENDIF»
+«ENDIF»
+«ENDFOREACH»
+«ENDLET»
+function «IF hasKeyword("reference")»&«ENDIF»«name»«IF ZendController.isInstance(parent)»Action«ENDIF»«""-»
+(«EXPAND PHP::standard::structure::Operation::parameters(parent, style)»)«""»
+«IF !Interface.isInstance(parent) && !this.isAbstract»
+ {
+«indent(getBody(), "   ")»
+}
+«ELSE»
+;
+«ENDIF»
+
+«ENDDEFINE»

@@ -1,0 +1,35 @@
+package Viewer;
+
+import java.util.Scanner;
+
+import Bean.User;
+
+public class View {
+	
+	private Scanner inScanner=new Scanner(System.in);
+
+	public void welcome() {
+		System.out.println("Welcome");
+		
+	}
+
+	public String getMessage() {
+		String tmpString=inScanner.next();
+		
+		return tmpString;
+	}
+
+	public User addUser() {
+	
+		User user=new User();
+		System.out.println("ADDING USERS");
+		System.out.println("Enter User's Name:");
+		user.setName(getMessage());
+		System.out.println("Enter User's Id:");
+		user.setId(inScanner.nextInt());
+		System.out.println("Enter User's Money:");
+		user.setMoney(inScanner.nextDouble());
+		return user;
+	}
+	
+}

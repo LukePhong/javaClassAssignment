@@ -1,0 +1,627 @@
+«EXTENSION Utility»
+
+«IMPORT uml»
+«IMPORT UMLLabProfile»
+«IMPORT Persistency»
+
+«IMPORT java::standard::classDiag::assoc»
+«IMPORT java::standard::classDiag::classifier»
+
+«EXTENSION java::jpa1::classDiag::Annotations»
+«EXTENSION java::jpa1::classDiag::Utility»
+«EXTENSION java::jpa1::classDiag::assoc::AssociationExtensions»
+
+«EXTENSION java::standard::classDiag::assoc::AssociationExtensions»
+«EXTENSION java::standard::classDiag::classifier::ClassifierExtensions»
+
+«DEFINE role (JPA1StyledElement style,Classifier parent,MemberFragmentTuple fragment) FOR Property»
+«IF isPrimitive(this.type) && !isMultivalued()»«fail("need a complex type")»«ENDIF»
+«LET getWordAlias(defaultAnnotationStyle()) AS annotationStyle»
+«IF annotationStyle!="property-access-getter"&&annotationStyle!="property-access-setter"&&annotationStyle!="field-access"»
+«fail("unsupported annotation style")»
+«ENDIF»
+«IF fragment.partId==0»
+«EXPAND role_FRG_Declaration(style, parent, annotationStyle) FOR this»
+«ELSEIF fragment.partId==1»
+«EXPAND role_FRG_Getter(style, parent, annotationStyle) FOR this»
+«ELSEIF fragment.partId==2»
+«EXPAND role_FRG_Setter(style, parent, annotationStyle) FOR this»
+«ELSEIF fragment.partId==3»
+«EXPAND role_FRG_Adder(style, parent, annotationStyle) FOR this»
+«ELSEIF fragment.partId==4»
+«EXPAND role_FRG_Remover(style, parent, annotationStyle) FOR this»
+«ENDIF»
+«ENDLET»
+«ENDDEFINE»
+
+«DEFINE role_FRG_Declaration(JPA1StyledElement style, Classifier parent, String annotationStyle)  FOR Property»
+«EXPAND File::import(type.style()) FOR type»
+«IF !parent.isInterface()»
+«LET getOtherEnd() AS partnerRole»
+«IF isMultivalued()»
+«EXPAND toAnnotation(partnerRole, "field-access", annotationStyle) FOR this»
+«EXPAND toManyDeclaration(style, partnerRole, parent) FOR this»
+«ELSE»
+«EXPAND toOneAnnotation(partnerRole, "field-access", annotationStyle) FOR this»
+«EXPAND toOneDeclaration(style, partnerRole, parent) FOR this»
+«ENDIF»
+«ENDLET»
+
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE role_FRG_Getter(JPA1StyledElement style, Classifier parent, String annotationStyle)  FOR Property»
+«LET getOtherEnd() AS partnerRole»
+«IF isMultivalued()»
+«EXPAND toAnnotation(partnerRole, "property-access-getter", annotationStyle) FOR this»
+«EXPAND toManyGetter(style, partnerRole, parent) FOR this»
+«ELSE»
+«EXPAND toOneAnnotation(partnerRole, "property-access-getter", annotationStyle) FOR this»
+«EXPAND toOneGetter(style, partnerRole, parent) FOR this»
+«ENDIF»
+«ENDLET»
+«ENDDEFINE»
+
+«DEFINE role_FRG_Setter(JPA1StyledElement style, Classifier parent, String annotationStyle)  FOR Property»
+«LET getOtherEnd() AS partnerRole»
+«IF isMultivalued()»
+«EXPAND toAnnotation(partnerRole, "property-access-setter", annotationStyle) FOR this»
+«EXPAND toManySetter(style, partnerRole, parent) FOR this»
+«ELSE»
+«EXPAND toOneAnnotation(partnerRole, "property-access-setter", annotationStyle) FOR this»
+«EXPAND toOneSetter(style, partnerRole, parent) FOR this»
+«ENDIF»
+«ENDLET»
+«ENDDEFINE»
+
+«DEFINE role_FRG_Adder(JPA1StyledElement style, Classifier parent, String annotationStyle)  FOR Property»
+«IF isMultivalued() && integrity()»
+«EXPAND toManyAdder(style, getOtherEnd(), parent) FOR this»
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE role_FRG_Remover(JPA1StyledElement style, Classifier parent, String annotationStyle)  FOR Property»
+«IF isMultivalued() && integrity()»
+«EXPAND toManyRemover(style, getOtherEnd(), parent) FOR this»
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE toOneDeclaration(JPA1StyledElement style, Property partnerRole, Classifier parent) FOR Property»
+«EXPAND java::jpa1::classDiag::Commons::attributeDeclarationAnnotations FOR this»
+private «type.name» «name»«IF ^default != null» = «^default»«ENDIF»;
+«ENDDEFINE»
+
+«DEFINE toOneSetter(JPA1StyledElement style, Property partnerRole, Classifier parent) FOR Property»
+«LET getWordAlias(name) AS param»
+«LET getBooleanAlias(false) AS builderStyle»
+«visibilityString()» «IF !builderStyle»void«ELSE»«parent.typeString(this)»«ENDIF» set«methodSuffix()»(«IF getBooleanAlias(false)»final «ENDIF»«type.name» «param») «""-»
+«IF parent.isInterface()»
+;
+
+«ELSE»
+{
+«IF integrity()»
+   if («param» == this.«name») {
+      return;
+   }
+   if (null != this.«name») {
+      final «type.name» oldValue = this.«name»;
+      this.«name» = null;
+«IF partnerRole.isMultivalued()»
+      oldValue.remove«partnerRole.methodSuffix()»(this);
+«ELSE»
+      oldValue.set«partnerRole.methodSuffix()»(null);
+«ENDIF»        
+   }
+«ENDIF»
+   this.«name» = «param»;
+«IF integrity()»
+   if (null != «param») {
+«IF partnerRole.isMultivalued()»
+«"      " + param».add«partnerRole.methodSuffix()»(this);
+«ELSE»
+«"      " + param».set«partnerRole.methodSuffix()»(this);
+«ENDIF»
+   }
+«ENDIF»
+«IF builderStyle»
+   return this;
+«ENDIF»              
+}
+
+«ENDIF»
+«ENDLET»
+«ENDLET»
+«ENDDEFINE»
+
+«DEFINE toOneGetter(JPA1StyledElement style, Property partnerRole, Classifier parent) FOR Property»
+«visibilityString()» «type.name» get«methodSuffix()»() «""-»
+«IF parent.isInterface()»
+;
+
+«ELSE»
+{
+   return «IF getBooleanAlias(true)»this.«ENDIF»«name»;
+}
+
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE toManyDeclaration(JPA1StyledElement style, Property partnerRole, Classifier parent) FOR Property»
+«EXPAND java::jpa1::classDiag::Commons::attributeDeclarationAnnotations FOR this»
+private «EXPAND AssociationContainer::container FOR this» «pluralizeIfNeeded()»«IF ^default != null» = «^default»«ENDIF»;
+«ENDDEFINE»
+
+«DEFINE toManySetter(JPA1StyledElement style, Property partnerRole, Classifier parent) FOR Property»
+«LET getWordAlias(name+"s") AS localVar»
+«LET getBooleanAlias(false) AS builderStyle»
+«visibilityString()» «IF !builderStyle»void«ELSE»«parent.typeString(this)»«ENDIF» set«methodSuffix()»(«IF getBooleanAlias(false)»final «ENDIF»«EXPAND AssociationContainer::container FOR this» «localVar») «""-»
+«IF parent.isInterface()»
+;
+
+«ELSE»
+{
+«IF getBooleanAlias(true)»   this.«ENDIF»«pluralizeIfNeeded()» = «localVar»;
+«IF builderStyle»    return this;«ENDIF»
+}
+
+«ENDIF»
+«ENDLET»
+«ENDLET»
+«ENDDEFINE»
+
+«DEFINE toManyGetter(JPA1StyledElement style, Property partnerRole, Classifier parent) FOR Property»
+«visibilityString()» «EXPAND AssociationContainer::container FOR this» get«methodSuffix()»() «""-»
+«IF parent.isInterface()»
+;
+
+«ELSE»
+{
+«IF integrity()»
+   if («IF getBooleanAlias(true)»this.«ENDIF»«pluralizeIfNeeded()» == null) {
+      return «EXPAND emptyToManyAccess FOR this»;
+   }
+«ELSEIF hasKeyword("lazy_init")»
+   if («IF getBooleanAlias(true)»this.«ENDIF»«pluralizeIfNeeded()» == null) {
+«IF getBooleanAlias(true)»      this.«ENDIF»«pluralizeIfNeeded()» = new «EXPAND AssociationContainer::defaultContainer FOR this»();
+   }
+«ENDIF»
+   return «""»
+«IF integrity() && ((ReferentialIntegrity) this).guard»
+«EXPAND protectedToManyAccess FOR this»
+«ELSE»
+«IF getBooleanAlias(true)»this.«ENDIF»«pluralizeIfNeeded()»;
+«ENDIF»
+}
+
+«ENDIF»
+«ENDDEFINE»
+
+
+«DEFINE toOneAnnotation(Property partnerRole, String annotationStyleName, String configuredAnnotationStyleName) FOR Property»
+«IF generateAnnotations(annotationStyleName, configuredAnnotationStyleName)»
+«LET true AS omitSeperatorOnEmptyIteration»
+«FOREACH getIntListAlias(0.upTo(2)) AS groupCounter0 SEPARATOR ""»
+«IF groupCounter0 == 0»
+«IF this.type.getAppliedStereotype("Persistency::PersistentPart") != null»
+«LET (PersistentPart)this.type AS persistentPart»
+«IF "EMBEDDABLE" == persistentPart.partType.name && (isComposedProperty() || falseForReverseTrueForForward())»
+«IF PrimaryKey.isInstance(this)»
+@EmbeddedId
+«addImport("javax.persistence.EmbeddedId")»
+«ELSE»
+@Embedded
+«addImport("javax.persistence.Embedded")»
+«ENDIF»
+«ELSE»
+/* can only handle embeddable persistent parts here. */
+«ENDIF»
+«ENDLET»
+«ELSE»
+«EXPAND toAnnotation(partnerRole, annotationStyleName, configuredAnnotationStyleName) FOR this»
+«ENDIF»
+«ELSEIF groupCounter0 == 1»
+«IF Overrides.isInstance(this)»
+«EXPAND java::jpa1::classDiag::Commons::override FOR (Overrides) this»
+«ENDIF»
+«ELSEIF groupCounter0 == 2»
+«IF PrimaryKeyJoinColumns.isInstance(this)»
+«EXPAND java::jpa1::classDiag::Commons::primaryKeyJoinColumns FOR (PrimaryKeyJoinColumns) this»
+«ENDIF»
+«ENDIF»
+«ENDFOREACH»
+«ENDLET»
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE toAnnotation(Property partnerRole, String annotationStyleName, String configuredAnnotationStyleName) FOR Property»
+«IF generateAnnotations(annotationStyleName, configuredAnnotationStyleName)»
+«LET true AS omitSeperatorOnEmptyIteration»
+«FOREACH getIntListAlias(0.upTo(8)) AS groupCounter3 SEPARATOR ""»
+«IF groupCounter3 == 0»
+@«IF partnerRole.isMultivalued()»Many«ELSE»One«ENDIF»To«IF isMultivalued()»Many«ELSE»One«ENDIF»
+«FILE "bufferRegion0_f32f7ae0" buffer»
+«EXPAND assocProperties(partnerRole) FOR this»
+«ENDFILE»
+«LET (String) getGlobalVar("bufferRegion0_f32f7ae0").indentWithRanges("") AS bufferResult»
+«IF bufferResult.empty()»
+«IF getBooleanAlias(false)»
+()
+«ENDIF»
+«bufferResult»
+
+«ELSE»
+(«bufferResult»)
+«ENDIF»
+«ENDLET»
+«addImport("javax.persistence." + (partnerRole.isMultivalued()?"Many":"One") + "To" + (isMultivalued()?"Many":"One"))»
+«ELSEIF groupCounter3 == 1»
+«IF getAppliedStereotype("Persistency::Cached") != null»«REM»Support for hibernate Caching.«ENDREM»
+«EXPAND java::jpa1::classDiag::Commons::cached FOR this»
+«ENDIF»
+«ELSEIF groupCounter3 == 2»
+«IF getAppliedStereotype("Persistency::Batch") != null»
+«EXPAND java::jpa1::classDiag::Commons::batch FOR this»
+«ENDIF»
+«ELSEIF groupCounter3 == 3»
+«IF isQualified()»
+@MapKey«""-»
+«IF !getQualifier().name.empty()»
+(name="«getQualifier().name»")
+«ELSE»
+
+«ENDIF»
+«addImport("javax.persistence.MapKey")»
+«ENDIF»
+«ELSEIF groupCounter3 == 4»
+«IF JoinColumns.isInstance(this)»
+«EXPAND joinColumns FOR (JoinColumns)this»
+«ENDIF»
+«ELSEIF groupCounter3 == 5»
+«IF JoinTable.isInstance(this)»
+«EXPAND joinTable FOR (JoinTable)this»
+«ENDIF»
+«ELSEIF groupCounter3 == 6»
+«IF getAppliedStereotype("Persistency::FetchStrategy") != null»
+«LET (FetchStrategy)this AS fetch»
+«IF fetch.trigger!=FetchTrigger::NONE»
+«IF fetch.ORMMapper == ORMMapper::HIBERNATE»
+@Fetch(FetchMode.«fetch.trigger.name»)
+«addImport("org.hibernate.annotations.Fetch")»
+«addImport("org.hibernate.annotations.FetchMode")»
+«ELSEIF fetch.ORMMapper == ORMMapper::ECLIPSE_LINK»
+@BatchFetch(«IF getBooleanAlias(false)»value = «ENDIF»BatchFetchType.«IF fetch.trigger==FetchTrigger::SUBSELECT»EXISTS«ELSE»«fetch.trigger.name»«ENDIF»)
+«addImport("org.eclipse.persistence.annotations.BatchFetch")»
+«addImport("org.eclipse.persistence.annotations.BatchFetchType")»
+«ELSE»
+«fail("unsupported ORM Mapper: " + fetch.ORMMapper)»
+«ENDIF»
+«ENDIF»
+«ENDLET»
+«ENDIF»
+«ELSEIF groupCounter3 == 7»
+«IF IndexOrder.isInstance(this)»
+«LET ((IndexOrder)this) AS io»
+@IndexColumn(«""»
+«LET true AS omitSeperatorOnEmptyIteration»
+«FOREACH getIntListAlias(0.upTo(1)) AS groupCounter1 SEPARATOR ", "»
+«IF groupCounter1 == 0»
+name = "«io.label»"«""»
+«ELSEIF groupCounter1 == 1»
+«IF io.indexBase != 0 || getBooleanAlias(false)»
+base = «io.indexBase»
+«ENDIF»
+«ENDIF»
+«ENDFOREACH»
+«ENDLET»
+)
+«addImport("org.hibernate.annotations.IndexColumn")»
+«ENDLET»
+«ENDIF»
+«ELSEIF groupCounter3 == 8»
+«IF hasKeyword("Hibernate.DeleteOrphan") || hasKeyword("Hibernate.SaveUpdate")»
+@Cascade( value = { «""»
+«LET true AS omitSeperatorOnEmptyIteration»
+«FOREACH getIntListAlias(0.upTo(1)) AS groupCounter2 SEPARATOR ", "»
+«IF groupCounter2 == 0»
+«IF hasKeyword("Hibernate.DeleteOrphan")»
+org.hibernate.annotations.CascadeType.DELETE_ORPHAN
+«ENDIF»
+«ELSEIF groupCounter2 == 1» 
+«IF hasKeyword("Hibernate.SaveUpdate")»
+org.hibernate.annotations.CascadeType.SAVE_UPDATE
+«ENDIF»
+«ENDIF»
+«ENDFOREACH»
+«ENDLET»
+} )
+«addImport("org.hibernate.annotations.Cascade")»
+«ENDIF»
+«ENDIF»
+«ENDFOREACH»
+«ENDLET»
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE assocProperties(Property partnerRole) FOR Property»
+«LET true AS omitSeperatorOnEmptyIteration»
+«FOREACH getIntListAlias(0.upTo(5)) AS groupCounter5 SEPARATOR ", "»
+«IF groupCounter5 == 0»
+«IF isInverseSide()»
+mappedBy="«partnerRole.name»"«""-» «REM»/*  association.memberEnd.indexOf(this): «association.memberEnd.indexOf(this)» isNavigable(): «isNavigable()» getOtherEnd().isNavigable(): «getOtherEnd().isNavigable()» !(isMultivalued() && !getOtherEnd().isMultivalued()): «!(isMultivalued() && !getOtherEnd().isMultivalued())» */«ENDREM»
+«ENDIF»
+«ELSEIF groupCounter5 == 1»
+«IF cascadeFlagCount() != 0 || getBooleanAlias(false)»
+cascade=«""-» 
+«LET (cascadeFlagCount() != 1 || getBooleanAlias(true)) AS needsBraces»
+«IF needsBraces»{«ENDIF»
+«LET getAppliedStereotype("Persistency::Cascade") != null AS isCascade»
+«addImport("javax.persistence.CascadeType")»
+«LET true AS omitSeperatorOnEmptyIteration»
+«FOREACH getIntListAlias(0.upTo(5)) AS groupCounter4 SEPARATOR ", "»
+«IF groupCounter4 == 0»
+«IF isComposedProperty()»CascadeType.ALL«ENDIF»
+«ELSEIF groupCounter4 == 1»
+«IF isCascade && ((Cascade)this).merge»CascadeType.MERGE«ENDIF»
+«ELSEIF groupCounter4 == 2»
+«IF isCascade && ((Cascade)this).persist»CascadeType.PERSIST«ENDIF»
+«ELSEIF groupCounter4 == 3»
+«IF isCascade && ((Cascade)this).refresh»CascadeType.REFRESH«ENDIF»
+«ELSEIF groupCounter4 == 4»
+«IF isCascade && ((Cascade)this).remove»CascadeType.REMOVE«ENDIF»
+«ELSEIF groupCounter4 == 5»
+«IF isCascade && ((Cascade)this).detach»CascadeType.DETACH«ENDIF»
+«ENDIF»
+«ENDFOREACH»
+«ENDLET»
+«ENDLET»
+«IF needsBraces»}«ENDIF»
+«ENDLET»
+«ENDIF»
+«ELSEIF groupCounter5 == 2»
+«IF FetchStrategy.isInstance(this)»
+«LET (FetchStrategy)this AS fetchStrategy»
+«REM»«TODO should work                 IF "EAGER"!=fetchStrategy.strategy.name || getBooleanAlias(false)»«ENDREM»
+«IF "EAGER"!=fetchStrategy.strategy.name || getBooleanAlias(false)»
+fetch=FetchType.«fetchStrategy.strategy.name»«""-»
+«addImport("javax.persistence.FetchType")»
+«ENDIF»
+«ENDLET»
+«ENDIF»
+«ELSEIF groupCounter5 == 3»
+«IF !isMultivalued()»
+«IF lower == 0»
+«IF getBooleanAlias(false)»
+optional=true«""-»
+«ENDIF»
+«ELSEIF lower == 1»
+optional=false«""-»
+«ELSE»
+optional=false /* lower=«lower» */«""-»
+«ENDIF»
+«ENDIF»
+«ELSEIF groupCounter5 == 4»
+«IF TargetEntity.isInstance(this)»
+«LET (TargetEntity)this AS targetEntity»
+targetEntity=«targetEntity.entityClassifier.name».class«""-»
+«EXPAND File::import(type.style()) FOR type»
+«ENDLET»
+«ENDIF»
+«ELSEIF groupCounter5 == 5»
+«IF hasKeyword("EclipseLink.DeleteOrphan")»
+orphanRemoval = true
+«ENDIF»
+«ENDIF»
+«ENDFOREACH»
+«ENDLET»
+«ENDDEFINE»
+
+«DEFINE joinColumns FOR JoinColumns»
+«IF columns.size >= 1»
+«LET if columns.size == 1 then getBooleanAlias(false) else true AS withAnnotation»
+«LET if columns.size == 1 then getBooleanAlias(false) else true AS withBraces»
+«IF withAnnotation»@JoinColumns(«ENDIF»
+«IF withBraces»{«ENDIF»
+«EXPAND joinColumn(true, this) FOREACH columns SEPARATOR ", " »
+«IF withBraces»}«ENDIF»
+«IF withAnnotation»)
+«addImport("javax.persistence.JoinColumns")»
+«ENDIF»
+«ENDLET»
+«ENDLET»
+«ENDIF»
+«ENDDEFINE»
+
+«REM» private «ENDREM»«DEFINE joinColumn(Boolean annotationStyle, Element base) FOR JoinColumn»
+«IF annotationStyle»@JoinColumn( «ENDIF»
+«LET true AS omitSeperatorOnEmptyIteration»
+«FOREACH getIntListAlias(0.upTo(7)) AS groupCounter6 SEPARATOR ", "»
+«IF groupCounter6 == 0»
+«IF !label.empty()»
+«LET getBooleanAlias(true) AS isConst»
+name=«IF isConst»"«ENDIF»«label»«IF isConst»"«ENDIF»«""-»
+«ENDLET»
+«ENDIF»
+«ELSEIF groupCounter6 == 1»
+«IF !referencedColumnName.empty()»
+«LET getBooleanAlias(true) AS isConst»
+referencedColumnName=«IF isConst»"«ENDIF»«referencedColumnName»«IF isConst»"«ENDIF»«""-»
+«ENDLET»
+«ELSEIF referencedProperty != null»«REM»TODO: Provide proper default according to standard.«ENDREM»
+referencedColumnName="«referencedProperty.propertyName()»"«""-»
+«ENDIF»
+«ELSEIF groupCounter6 == 2»
+«IF !unique || getBooleanAlias(false)»«REM»defaults to false«ENDREM»
+unique=«unique»
+«ENDIF»
+«ELSEIF groupCounter6 == 3»
+«IF !nullable || getBooleanAlias(false)»«REM»defaults to true«ENDREM»
+nullable=«nullable»
+«ENDIF»
+«ELSEIF groupCounter6 == 4»
+«IF !insertable || getBooleanAlias(false)»«REM»defaults to true«ENDREM»
+insertable=«insertable»
+«ENDIF»
+«ELSEIF groupCounter6 == 5»
+«IF !updatable || getBooleanAlias(false)»«REM»defaults to true«ENDREM»
+updatable=«updatable»
+«ENDIF»
+«ELSEIF groupCounter6 == 6»
+«IF !columnDefinition.empty()»
+columnDefinition="«columnDefinition»"«""-»
+«ENDIF»
+«ELSEIF groupCounter6 == 7»
+«IF !table.empty()»
+«LET getBooleanAlias(true) AS isConst»
+table=«IF isConst»"«ENDIF»«table»«IF isConst»"«ENDIF»«""-»
+«ENDLET»
+«ENDIF»
+«ENDIF»
+«ENDFOREACH»
+«ENDLET»
+«IF annotationStyle»)«""-»
+«addImport("javax.persistence.JoinColumn")»
+«ENDIF»
+«ENDDEFINE»
+
+«REM» private «ENDREM»«DEFINE joinTable FOR JoinTable»
+@JoinTable( «""-»
+«LET true AS omitSeperatorOnEmptyIteration»
+«FOREACH getIntListAlias(0.upTo(5)) AS groupCounter7 SEPARATOR ", "»
+«IF groupCounter7 == 0»
+«IF !this.tableName.empty()»
+«ENDIF»
+name="«this.tableName»"«""-»
+«ELSEIF groupCounter7 == 1»
+«IF !this.schema.empty()»
+schema="«this.schema»"«""-»
+«ENDIF»
+«ELSEIF groupCounter7 == 2»
+«IF !this.catalog.empty()»
+catalog=«this.catalog»
+«ENDIF»
+«ELSEIF groupCounter7 == 3»
+«IF !this.joinColumns.isEmpty»
+joinColumns=«""»
+«REM»TODO currently unsupported: «LET if this.joinColumns.size == 1 then getBooleanAlias(false) else true AS withBraces»«ENDREM»
+«LET getBooleanAlias(true) AS withBraces»
+«IF withBraces»{«ENDIF»
+«EXPAND joinColumn(true, this) FOREACH this.joinColumns SEPARATOR ", "»
+«IF withBraces»}«ENDIF»
+«ENDLET»
+«ENDIF»
+«ELSEIF groupCounter7 == 4»
+«IF !this.inverseJoinColumns.isEmpty»
+inverseJoinColumns=«""»
+«REM»TODO currently unsupported: «LET if this.inverseJoinColumns.size == 1 then getBooleanAlias(false) else true AS withBraces»«ENDREM»
+«LET getBooleanAlias(true) AS withBraces»
+«IF withBraces»{«ENDIF»
+«EXPAND joinColumn(true, this) FOREACH this.inverseJoinColumns SEPARATOR ", "»
+«IF withBraces»}«ENDIF»
+«ENDLET»
+«ENDIF»
+«ELSEIF groupCounter7 == 5»
+«IF !this.joinTableConstraints.isEmpty»
+uniqueConstraints=«""»
+«REM»TODO currently unsupported: «LET if this.joinTableConstraints.size == 1 then getBooleanAlias(false) else true AS withBraces»«ENDREM»
+«LET getBooleanAlias(true) AS withBraces»
+«IF withBraces»{«ENDIF»
+«EXPAND java::jpa1::classDiag::Commons::uniqueConstraint FOREACH this.joinTableConstraints SEPARATOR ", "»
+«IF withBraces»}«ENDIF»
+«ENDLET»
+«ENDIF»
+«ENDIF»
+«ENDFOREACH»
+«ENDLET»
+ )
+«addImport("javax.persistence.JoinTable")»
+«ENDDEFINE»
+
+«DEFINE protectedToManyAccess FOR Property»
+Collections.unmodifiable«""»
+«IF hasKeyword("generic_container")»
+«addImport("java.util.Collection")»
+Collection(«""-»
+«ELSEIF isOrdered»
+«addImport("java.util.List")»
+List(«""-»
+«ELSEIF isQualified()»
+«addImport("java.util.Map")»
+Map(«""-»
+«ELSEIF getBooleanAlias(true)»
+«addImport("java.util.Set")»
+Set(«""-»
+«ELSE»
+«addImport("java.util.Collection")»
+Collection(«""-»
+«ENDIF»
+«IF getBooleanAlias(true)»this.«ENDIF»
+«pluralizeIfNeeded()»);
+«addImport("java.util.Collections")»
+«ENDDEFINE»
+
+«DEFINE emptyToManyAccess FOR Property»
+Collections.empty«""»
+«IF isOrdered»
+List()«""»
+«ELSEIF isQualified()»
+Map()«""»
+«ELSE»
+Set()«""»
+«ENDIF»
+«addImport("java.util.Collections")»
+«ENDDEFINE»
+
+«DEFINE toManyAdder(JPA1StyledElement style, Property partnerRole, Classifier parent) FOR Property»
+«LET getWordAlias(this.name) AS param»
+«visibilityString()» boolean add«methodSuffix()»(«IF getBooleanAlias(false)»final «ENDIF»«type.name» «param») «""-»
+«IF parent.isInterface()»
+;
+
+«ELSE»
+{
+   if («IF getBooleanAlias(true)»this.«ENDIF»«pluralizeIfNeeded()» == null) {
+«IF getBooleanAlias(true)»   this.«ENDIF»«pluralizeIfNeeded()» = new «EXPAND AssociationContainer::defaultContainer FOR this»();
+   }
+   if (!«IF getBooleanAlias(true)»this.«ENDIF»«pluralizeIfNeeded()».contains(«param»)) {
+«IF getBooleanAlias(true)»      this.«ENDIF»«pluralizeIfNeeded()».add(«param»);
+«IF partnerRole.isMultivalued()»
+«"      "+param».add«partnerRole.methodSuffix()»(this);
+«ELSE»
+«"      "+param».set«partnerRole.methodSuffix()»(this);         
+«ENDIF»
+      return true;
+   }
+   return false;
+}
+
+«ENDIF»
+«ENDLET»
+«ENDDEFINE»
+
+«DEFINE toManyRemover(JPA1StyledElement style, Property partnerRole, Classifier parent) FOR Property»
+«LET getWordAlias(this.name) AS param»
+«visibilityString()» boolean remove«methodSuffix()»(«IF getBooleanAlias(false)»final «ENDIF»«type.name» «param») «""-»
+«IF parent.isInterface()»
+;
+
+«ELSE»
+{
+   if («IF getBooleanAlias(true)»this.«ENDIF»«pluralizeIfNeeded()» == null) {
+      return false;
+   }
+   if («IF getBooleanAlias(true)»this.«ENDIF»«pluralizeIfNeeded()».remove(«param»)) {
+«IF partnerRole.isMultivalued()»
+«"      "+param».remove«partnerRole.methodSuffix()»(this);
+      return true;
+«ELSE»
+«"      "+param».set«partnerRole.methodSuffix()»(null);
+      return true;
+«ENDIF»
+   }
+   return false;
+}
+
+«ENDIF»
+«ENDLET»
+«ENDDEFINE»

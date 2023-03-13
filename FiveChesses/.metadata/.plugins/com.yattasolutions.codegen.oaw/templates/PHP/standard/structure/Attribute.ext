@@ -1,0 +1,19 @@
+import uml;
+import UMLLabProfile;
+
+extension Utility reexport;
+
+// visibilities for properties in php: public=var/protected/private
+String visibilityString(Property this) :
+	switch (visibility) {
+		case VisibilityKind::public    : (if getBooleanAlias(true) then "public" else "var")
+		case VisibilityKind::protected : "protected"
+		case VisibilityKind::^private  : "private"
+		default                        : "/*invalid visibility*/"
+	};
+
+pluralizeIfNeeded(Property this) :
+    if isMultivalued() then
+        name.pluralize()
+    else
+        name;

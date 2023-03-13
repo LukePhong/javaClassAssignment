@@ -1,0 +1,42 @@
+«IMPORT uml»
+«IMPORT UMLLabProfile»
+
+«EXTENSION Utility»
+
+«DEFINE model(StyledElement style) FOR Model»
+«REM» does not work due to #1792
+«EXPAND package(style)»
+«ENDREM»
+«REM» - workaround for #1792 - «ENDREM»
+«FOREACH getAllOwnedTypes() AS element»
+«IF ((Class.isInstance(element) || Interface.isInstance(element)) || Enumeration.isInstance(element)) && !Behavior.isInstance(element)»
+«IF !element.isReference()»
+«EXPAND Unit::unit(this, element.style()) FOR (Classifier) element»
+«ENDIF»
+«ELSEIF Deployment.isInstance(element)»
+«EXPAND deployment(element.style()) FOR (Deployment)element»
+«ENDIF»
+«ENDFOREACH»
+«REM» - end of workaround for #1792 - «ENDREM»
+«ENDDEFINE»
+
+«DEFINE package(StyledElement style) FOR Package»
+«FOREACH ownedElement AS element»
+«REM»
+«IF Package.isInstance(element)»
+«EXPAND package(element.style()) FOR (Package)element»
+«ENDIF»
+«ENDREM»
+«IF Classifier.isInstance(element)»
+«IF !Association.isInstance(element)»
+«EXPAND Unit::unit(getModel(),element.style()) FOR (Classifier)element»
+«ENDIF»
+«ELSEIF Deployment.isInstance(element)»
+«EXPAND deployment(element.style()) FOR (Deployment)element»  
+«ENDIF»
+«ENDFOREACH»
+«ENDDEFINE»
+
+«DEFINE deployment(StyledElement style) FOR Deployment»
+«fail("the standard style does not support deployments")»
+«ENDDEFINE»

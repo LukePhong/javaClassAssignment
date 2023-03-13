@@ -1,0 +1,38 @@
+package view;
+
+import control.CProcess;
+import util.Event;
+import util.ExchangeCommands;
+
+public class EventDeliver {
+	public static Object processCommand(String in) {
+		switch (in) {
+		case "Quit":
+			return VProcess.process(new hQuit(), new PQuit().produce());
+		case "PutChess":
+			try {
+				return VProcess.process(new hPutChess(), new PPutChess().produce());
+			} catch (Exception e) {
+				throw e;
+			}
+
+		default:
+			return VProcess.process(new hWrongCommand(), new PWrongCommand().produce());
+		}
+	}
+	public static Object processExchangeCommand(ExchangeCommands in,Event e) {
+		switch (in) {
+		case QUIT:
+			//return MProcess.process(new hQuit(), new PQuit().produce());
+			return null;
+		case SHOW:
+			Viewer.outputBoard();
+			return null;
+		case AfterWin:
+			Viewer.afterWin(e);
+			return null;
+		default:
+			return null;
+		}
+	}
+}

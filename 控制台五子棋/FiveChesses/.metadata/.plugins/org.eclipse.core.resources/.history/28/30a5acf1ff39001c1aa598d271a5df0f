@@ -1,0 +1,29 @@
+package mapper;
+
+import board.*;
+
+
+public class BoardMap {
+	private static BoardBuffer buff=new BoardBuffer();
+	//public BoardMap mapbuffer=new BoardMap();
+	
+	
+	public boolean insert(Position p) {
+		
+		return true;
+	}
+
+
+	public BoardBuffer get() {
+		
+		return buff;
+	}
+
+
+	public static Player find(Position tmpPos) {
+		
+		return buff.get(tmpPos);
+	};
+	
+	
+}

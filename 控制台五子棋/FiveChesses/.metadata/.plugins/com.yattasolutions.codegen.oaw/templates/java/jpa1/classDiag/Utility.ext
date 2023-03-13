@@ -1,0 +1,60 @@
+import uml;
+import Persistency;
+
+extension Utility;
+
+boolean generateAnnotations(Property this, String style, String configuredAnnotationStyleName) :
+    style == configuredAnnotationStyleName
+;
+
+boolean empty(String s) :
+    s == null || s == "";
+
+/**
+ * Returns true if the property is constrained by a primary key from the same package.
+ * The query may be restricted to singular primary keys through the exclusive parameter.
+ */
+boolean isPrimaryKey(Property this, boolean exclusive):
+   JAVA com.yattasolutions.persistency.profile.Utility.isPrimaryKey(org.eclipse.uml2.uml.Property, java.lang.Boolean);
+
+String propertyName(Property this):
+// TODO disabled for demo
+/*   if Column.isInstance(this) then
+      ((Column)this).label
+   else*/
+      this.name
+;
+
+String columnName(Property this):
+  if (!Column.isInstance(this) && !JoinColumns.isInstance(this)) || !falseForReverseTrueForForward() then
+    name
+  else if JoinColumns.isInstance(this) then
+  (
+    let jcl = ((JoinColumn)((JoinColumns)this).columns.fromSingleton()).label:
+      if jcl != null && jcl.length != 0 then
+        jcl
+      else
+        name
+  )
+  else
+  (
+    let cl = ((Column)this).label:
+      if cl != null && cl.length != 0 then
+        cl
+      else
+        name
+   )
+;
+
+Object getPrimaryKey(Classifier this, Integer mode):
+   JAVA com.yattasolutions.persistency.profile.Utility.getPrimaryKey(org.eclipse.uml2.uml.Classifier, java.lang.Long);
+
+List[Property] getOwnedAttribute(Classifier this):
+  if Interface.isInstance(this) then
+    ((Interface)this).ownedAttribute
+  else if StructuredClassifier.isInstance(this) then
+    ((StructuredClassifier)this).ownedAttribute
+  else
+    null
+;
+    

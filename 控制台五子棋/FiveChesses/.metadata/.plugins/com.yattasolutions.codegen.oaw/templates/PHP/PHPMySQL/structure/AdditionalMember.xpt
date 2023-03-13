@@ -1,0 +1,215 @@
+«IMPORT uml»
+«IMPORT UMLLabProfile»
+«IMPORT PHPProfile»
+
+«EXTENSION Utility»
+«EXTENSION PHP::PHPMySQL::structure::AdditionalMember»
+
+
+«DEFINE additionalMember (Classifier parent,PHPMySQLStyledElement style,MemberFragmentTuple fragment) FOR Classifier»
+«IF fragment.partId==0»
+«EXPAND PHP::standard::structure::AdditionalMember::additionalMember_FRG_Single(parent, style) FOR this»
+«ELSEIF fragment.partId==1»
+«EXPAND additionalMember_FRG_SelectAllQuery(parent, style) FOR this»
+«ELSEIF fragment.partId==2»
+«EXPAND additionalMember_FRG_SelectByIDQuery(parent, style) FOR this»
+«ELSEIF fragment.partId==3»
+«EXPAND additionalMember_FRG_InsertQuery(parent, style) FOR this»
+«ELSEIF fragment.partId==4»
+«EXPAND additionalMember_FRG_UpdateQuery(parent, style) FOR this»
+«ELSEIF fragment.partId==5»
+«EXPAND additionalMember_FRG_PK(parent, style) FOR this»
+«ELSEIF fragment.partId==6»
+«EXPAND additionalMember_FRG_PK_GETTER(parent, style) FOR this»
+«ELSEIF fragment.partId==7»
+«EXPAND additionalMember_FRG_PK_SETTER(parent, style) FOR this»
+«ELSEIF fragment.partId==8»
+«EXPAND additionalMember_FRG_buildFromSQLWithPK(parent, style) FOR this»
+«ELSEIF fragment.partId==9»
+«EXPAND additionalMember_FRG_buildFromAssocArray(parent, style) FOR this»
+«ELSEIF fragment.partId==10»
+«EXPAND additionalMember_FRG_buildAllFromSQL(parent, style) FOR this»
+«ELSEIF fragment.partId==11»
+«EXPAND additionalMember_FRG_storeInDatabase(parent, style) FOR this»
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE additionalMember_FRG_SelectAllQuery(Classifier parent, PHPMySQLStyledElement style)  FOR Classifier»
+«IF !Interface.isInstance(parent) && !parent.isAbstract»
+const SELECT_ALL_QUERY = 'SELECT * FROM `«EXPAND PHP::standard::structure::Unit::name(parent) FOR parent»`';
+
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE additionalMember_FRG_SelectByIDQuery(Classifier parent, PHPMySQLStyledElement style)  FOR Classifier»
+«IF !Interface.isInstance(parent) && !parent.isAbstract»
+const SELECT_BY_ID_QUERY = 'SELECT * FROM `«EXPAND PHP::standard::structure::Unit::name(parent) FOR parent»` WHERE `«getPrimaryKey()»`="%s"';
+
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE additionalMember_FRG_InsertQuery(Classifier parent, PHPMySQLStyledElement style)  FOR Classifier»
+«IF !Interface.isInstance(parent) && !parent.isAbstract»
+const INSERT_QUERY = 'INSERT INTO `«EXPAND PHP::standard::structure::Unit::name(parent) FOR parent»` («""»
+«FOREACH columns() AS prop SEPARATOR ", "»
+«IF ForeignKey.isInstance(prop)»/*«prop.name»*/`«((ForeignKey)prop).keyName»`«ELSE»`«prop.name»`«ENDIF»
+«ENDFOREACH»
+) VALUES («""»
+«FOREACH columns() AS prop SEPARATOR ", "»
+"%s"«""»
+«ENDFOREACH»
+)';
+ 
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE additionalMember_FRG_UpdateQuery(Classifier parent, PHPMySQLStyledElement style)  FOR Classifier»
+«IF !Interface.isInstance(parent) && !parent.isAbstract»
+const UPDATE_QUERY = 'UPDATE `«EXPAND PHP::standard::structure::Unit::name(parent) FOR parent»` SET «""»
+«FOREACH columns() AS prop SEPARATOR ", "»
+«IF ForeignKey.isInstance(prop)»/*«prop.name»*/`«((ForeignKey)prop).keyName»`«ELSE»`«prop.name»`«ENDIF»="%s"«""»
+«ENDFOREACH»
+ WHERE `«getPrimaryKey()»`="%s"';
+ 
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE additionalMember_FRG_PK(Classifier parent, PHPMySQLStyledElement style)  FOR Classifier»
+«IF !Interface.isInstance(parent) && !parent.isAbstract»
+private $pk = NULL;
+
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE additionalMember_FRG_PK_GETTER(Classifier parent, PHPMySQLStyledElement style)  FOR Classifier»
+«IF !Interface.isInstance(parent) && !parent.isAbstract»
+public function getPrimaryKey() {
+   return $this->pk;
+}
+
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE additionalMember_FRG_PK_SETTER(Classifier parent, PHPMySQLStyledElement style)  FOR Classifier»
+«IF !Interface.isInstance(parent) && !parent.isAbstract»
+public function setPrimaryKey(/*int*/ $primaryKey) {
+   $this->pk = $primaryKey;
+}
+
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE additionalMember_FRG_buildFromSQLWithPK(Classifier parent, PHPMySQLStyledElement style)  FOR Classifier»
+«IF !Interface.isInstance(parent) && !parent.isAbstract»
+/**
+ * Retrieves a {@link #«EXPAND PHP::standard::structure::Unit::name(parent)»} from the database, identified by the given pk.
+ *
+ * @param int $pk pk in the table
+ * @return a {@link #«EXPAND PHP::standard::structure::Unit::name(parent)»}
+ * @throws Exception if there is no «EXPAND PHP::standard::structure::Unit::name(parent)» in the database identified by the given key or if another SQL error occurs.
+ */
+static function buildFromSQLWithPK( $pk ) {
+   global $link;
+
+   $query = sprintf(«EXPAND PHP::standard::structure::Unit::name(parent)»::SELECT_BY_ID_QUERY, mysql_real_escape_string($pk, $link));
+
+   $resource = mysql_query( $query, $link );
+   if( $resource === FALSE ) {
+      throw new Exception('Error executing query "'.$query.'": '.mysql_error($link));
+   }
+   if (mysql_num_rows( $resource ) == 1) {
+      $firstResultSet = mysql_fetch_assoc($resource);
+      return «EXPAND PHP::standard::structure::Unit::name(parent)»::buildFromAssocArray($firstResultSet);
+   }
+   throw new Exception('There is no «EXPAND PHP::standard::structure::Unit::name(parent)» with pk="'.$pk.'"');
+}
+
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE additionalMember_FRG_buildFromAssocArray(Classifier parent, PHPMySQLStyledElement style)  FOR Classifier»
+«IF !Interface.isInstance(parent) && !parent.isAbstract»
+/**
+ * Builds a «EXPAND PHP::standard::structure::Unit::name(parent)» out of an associative array.
+ * @return a
+ */
+static function buildFromAssocArray( $array ) {
+   if( !is_array($array) ) {
+      throw new Exception('The given object is no array.');
+   }
+
+   $value = new «EXPAND PHP::standard::structure::Unit::name(parent)»();
+   $value->pk = $array['«getPrimaryKey()»'];
+«FOREACH columns() AS prop»
+   $value->«prop.name» = $array[«IF ForeignKey.isInstance(prop)»/*«prop.name»*/'«((ForeignKey)prop).keyName»«ELSE»'«prop.name»«ENDIF»'];
+«ENDFOREACH»
+
+   return $value;
+}
+
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE additionalMember_FRG_buildAllFromSQL(Classifier parent, PHPMySQLStyledElement style)  FOR Classifier»
+«IF !Interface.isInstance(parent) && !parent.isAbstract»
+/**
+ * Retrieves all {@link #«EXPAND PHP::standard::structure::Unit::name(parent)»}s from the database.
+ * @return array of {@link #«EXPAND PHP::standard::structure::Unit::name(parent)»}s
+ * @throws Exception if some SQL error occurs.
+ */
+static function buildAllFromSQL() {
+   global $link;
+
+   $query = «EXPAND PHP::standard::structure::Unit::name(parent)»::SELECT_ALL_QUERY;
+   $resource = mysql_query( $query, $link );
+   if( $resource === FALSE) {
+      throw new Exception('Error executing query "'.$query.'": '.mysql_error($link));
+   }
+   $list = array();
+   while( $row = mysql_fetch_assoc($resource) ) {
+      $list[] = «EXPAND PHP::standard::structure::Unit::name(parent)»::buildFromAssocArray(row);
+   }
+
+   return $list;
+}
+
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE additionalMember_FRG_storeInDatabase(Classifier parent, PHPMySQLStyledElement style)  FOR Classifier»
+«IF !Interface.isInstance(parent) && !parent.isAbstract»
+/**
+ * Stores this object into the database: Performs an INSERT operation
+ * if {@link #pk} is null, else an UPDATE.
+ * @throws Exception if some SQL error occurs.
+ */
+function storeInDatabase() {
+   global $link;
+
+   if( $this->pk == null ) {
+«LET columns() AS columns»
+«IF columns.size==0»
+      $query = INSERT_QUERY;
+«ELSE»
+      $query = sprintf(INSERT_QUERY, «""»
+«FOREACH columns AS prop SEPARATOR ", "»
+
+         mysql_real_escape_string($this->«prop.name», $link)«""»
+«ENDFOREACH»);
+«ENDIF»
+«ENDLET»
+   } else {
+      $query = sprintf(UPDATE_QUERY,
+«FOREACH columns() AS prop»
+         mysql_real_escape_string($this->«prop.name», $link),
+«ENDFOREACH»
+         mysql_real_escape_string($this->pk, $link));
+   }
+   $result = mysql_query( $query, $link );
+   if( $result === FALSE) {
+      throw new Exception('Error executing query "'.$query.'": '.mysql_error($link));
+   }
+}
+
+«ENDIF»
+«ENDDEFINE»

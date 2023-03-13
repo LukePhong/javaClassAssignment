@@ -1,0 +1,25 @@
+import uml;
+
+extension java::standard::classDiag::classifier::ClassifierExtensions reexport;
+extension java::legacy::Utility reexport;
+
+getModifier(Classifier this, int modifier) :
+	switch (modifier) {
+		case 1: visibilityString()
+		case 2: optionalForInterface(isAbstract, " abstract ", this)
+		case 3: (if isStatic() then " static " else "")
+		case 4: (if isFinal() then " final " else "")
+		case 5: (if isStrictFP() then " strictfp " else "")
+		default: "No_valid_modifier"
+	};
+
+optionalForInterface(Element this, boolean condition, String text, Classifier parent) :
+	if parent.isInterface() then
+		(if condition then
+			optionalText(text, false)
+		else
+			"") //fail("\"" + text + "\" should be set for interfaces."))
+	else if condition then
+		text
+	else
+		"";

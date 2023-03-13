@@ -1,0 +1,26 @@
+«IMPORT UMLLabProfile»
+«IMPORT uml»
+
+«EXTENSION Utility»
+
+«DEFINE comment FOR Element»
+«EXPAND comment("/*"," */")»
+«ENDDEFINE»
+
+«DEFINE comment(String start, String end) FOR Element»
+«IF !ownedComment.isEmpty»
+«start»
+«FOREACH ownedComment AS comment SEPARATOR " * ----------------------------------------------"»
+
+«comment.indent(comment.body, " * ")»
+
+«ENDFOREACH»
+«REM» TODO #1534«IF end.length != 0»
+«end»
+
+«ENDIF»
+«ENDREM»
+«end»
+
+«ENDIF»
+«ENDDEFINE»

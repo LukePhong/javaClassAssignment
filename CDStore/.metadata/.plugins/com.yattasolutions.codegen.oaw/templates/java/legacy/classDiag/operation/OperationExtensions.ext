@@ -1,0 +1,20 @@
+import uml;
+
+extension java::standard::classDiag::operation::OperationExtensions reexport;
+extension java::legacy::Utility reexport;
+extension java::legacy::classDiag::classifier::ClassifierExtensions;
+
+getModifier(Operation this, int modifier, Classifier parent) :
+	switch (modifier) {
+		case 1: childVisibilityString(parent)
+		case 2: optionalForInterface(isAbstract, " abstract ", parent)
+		case 3: (if isStatic then " static " else "")
+		case 4: (if isFinal() then " final " else "")
+		case 5: (if isSynchronized() then " synchronized " else "")
+		case 6: (if isNative() then " native " else "")
+		case 7: (if hasKeyword("defender") then " default " else "")
+		default: "No_valid_modifier"
+	};
+
+String typeParameterDeclaration(Operation this) :
+	JAVA com.yattasolutions.codegen.util.Utility.getTypeParameterDeclaration(org.eclipse.uml2.uml.Operation);

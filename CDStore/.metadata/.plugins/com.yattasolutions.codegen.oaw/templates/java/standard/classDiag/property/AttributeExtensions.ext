@@ -1,0 +1,52 @@
+import uml;
+
+extension Utility reexport;
+
+methodSuffix(String this) :
+	if "class" == this then
+		toFirstUpper()+"_"
+	else
+		toFirstUpper();
+
+isFinal(Property this) :
+	isLeaf && isReadOnly;
+	
+isTransient(Property this) :
+	hasKeyword("transient");
+
+isVolatile(Property this) :
+	hasKeyword("volatile");
+
+isConstant(Property this) :
+	isStatic && isFinal();
+
+isConstantWithGetter(Property this) :
+	isConstant() && hasKeyword("ConstantWithGetter");
+
+// TODO #2578 isInstance check to Property should not be needed, bug in reasoning. If removed, com.yattasolutions.sdm.profile.tests.StaticReversedRoundtripTest.testRep() fails
+isQualified(Property this) :
+	Property.isInstance(this) && !qualifier.isEmpty;
+
+attrVis(Property this, Classifier parent) :
+	if (isConstant() && !isConstantWithGetter()) then
+		childVisibilityString(parent)
+	else
+		"private";
+
+private pluralizeIfNeeded(Property this, boolean pluralize) :
+    if pluralize then
+        name.pluralize()
+    else
+        name;
+
+thisName(Property this,Classifier parent) :
+    thisName( this, parent, false);
+
+thisName(Property this,Classifier parent,boolean pluralize) :
+	if !isStatic then
+       (if getBooleanAlias(true) then 
+           "this."+pluralizeIfNeeded(pluralize)
+       else
+	       pluralizeIfNeeded(pluralize))
+	else
+		parent.typeString(this)+"."+pluralizeIfNeeded(pluralize);

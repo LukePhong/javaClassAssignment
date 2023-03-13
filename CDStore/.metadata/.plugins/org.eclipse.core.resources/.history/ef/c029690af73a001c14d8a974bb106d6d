@@ -1,0 +1,30 @@
+package Bean;
+
+import java.util.LinkedList;
+
+public class User {
+	private String name;
+	private int id;
+	private storeDisk borrowed;
+	private double money;
+	
+	public String getName() {
+		return name;
+	}
+	public int getId() {
+		return id;
+	}
+	public double getMoney() {
+		return money;
+	}
+	
+	public storeDisk getBorrowed() {
+		return borrowed;
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		// TODO Auto-generated method stub
+		return super.equals(obj);
+	}
+}

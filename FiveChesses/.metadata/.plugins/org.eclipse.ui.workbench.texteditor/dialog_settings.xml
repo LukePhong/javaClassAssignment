@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<section name="Workbench">
+	<section name="org.eclipse.ui.texteditor.FindReplaceDialog">
+		<item key="selection" value="Limits.width"/>
+		<item key="wrap" value="true"/>
+		<item key="casesensitive" value="false"/>
+		<item key="wholeword" value="true"/>
+		<item key="incremental" value="false"/>
+		<item key="isRegEx" value="false"/>
+		<list key="findhistory">
+			<item value="SIZE_COL"/>
+			<item value="boardBuffer.board.get(tmPosition).p == color"/>
+			<item value="5"/>
+			<item value="15"/>
+			<item value="get"/>
+		</list>
+		<list key="replacehistory">
+			<item value="Limits.width"/>
+			<item value="boardBuffer.board.get(tmPosition)!=null "/>
+			<item value="WinSteps"/>
+		</list>
+	</section>
+	<section name="org.eclipse.ui.texteditor.FindReplaceDialog_dialogBounds">
+		<item key="DIALOG_X_ORIGIN" value="1113"/>
+		<item key="DIALOG_Y_ORIGIN" value="321"/>
+		<item key="DIALOG_WIDTH" value="298"/>
+		<item key="DIALOG_HEIGHT" value="407"/>
+		<item key="DIALOG_FONT_NAME" value="1|Segoe UI|9.0|0|WINDOWS|1|-27|0|0|0|400|0|0|0|1|0|0|0|0|Segoe UI"/>
+	</section>
+</section>

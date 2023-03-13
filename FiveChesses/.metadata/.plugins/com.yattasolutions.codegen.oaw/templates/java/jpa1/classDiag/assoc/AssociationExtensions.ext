@@ -1,0 +1,58 @@
+import uml;
+import Persistency;
+
+extension java::standard::classDiag::assoc::AssociationExtensions;
+extension Utility reexport;
+
+/** 
+ * Relationships may be bidirectional or unidirectional.
+ * A bidirectional relationship has both an owning side and an inverse side. 
+ * A unidirectional relationship has only an owning side. The owning side of 
+ * a relationship determines the updates to the relationship in the database.
+ * <br/>
+ * If the association is bidirectional:
+ * The inverse side of a bidirectional relationship must refer to its owning 
+ * side by use of the mappedBy element of the OneToOne, OneToMany, or 
+ * ManyToMany annotation. The mappedBy element designates the property or field 
+ * in the entity that is the owner of the relationship.
+ */
+boolean isInverseSide(Property this) :
+    if isNavigable() && getOtherEnd().isNavigable() then
+       (if(!isMultivalued() && getOtherEnd().isMultivalued()) then
+          false /* ManyToOne - we are the "many"-side, hence the owning side */
+       else if (isMultivalued() && !getOtherEnd().isMultivalued()) then
+          true /* ManyToOne - we are the "one"-side, hence the inverse side */
+       else 
+          association.memberEnd.indexOf(this) == 1) 
+    else
+    	false
+;
+
+/** 
+ * Returns true if the property's opposite association end if marked composite.
+ * Applies only to properties being ends of binary associations.
+ */    
+boolean isComposedProperty(Property this) :
+   JAVA com.yattasolutions.persistency.profile.Utility.isComposedProperty(org.eclipse.uml2.uml.Property);
+
+Integer cascadeFlagCount(Property this) :
+   (isComposedProperty()? 1 : 0) +
+   (
+      (getAppliedStereotype("Persistency::Cascade") != null) ?
+      ( 
+         let cascade = ((Cascade)this) : 
+         (
+            (cascade.merge ? 1 : 0) +
+            (cascade.persist ? 1 : 0) +
+            (cascade.refresh ? 1 : 0) +
+            (cascade.remove ? 1 : 0)
+         )
+      )
+    : 0
+   )
+ ;
+ 
+boolean integrity(Property this) :
+   //TODO: Don't expect ReferentialIntegrity to be applied at BOTH sides - blocked by [901]
+   opposite != null && ReferentialIntegrity.isInstance(this) 
+;

@@ -1,0 +1,55 @@
+«EXTENSION Utility»
+«IMPORT uml»
+«IMPORT UMLLabProfile»
+
+«EXTENSION java::standard::classDiag::operation::OperationExtensions»
+«EXTENSION java::standard::classDiag::classifier::ClassifierExtensions»
+«EXTENSION JDTDisassembled::standard::structure::Utility»
+
+«DEFINE operation (StyledElement style,Classifier parent,MemberFragmentTuple fragment) FOR Operation»
+«IF fragment.partId==0»
+«EXPAND operation_FRG_Single(style, parent) FOR this»
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE operation_FRG_Single(StyledElement style, Classifier parent)  FOR Operation»
+«IF initializer()» 
+static {};
+«ELSE»
+«visibilityString(false)»«""»
+«IF isAbstract»abstract «ENDIF»
+«IF isStatic»static «ENDIF»
+«IF hasKeyword("bridge")»bridge «ENDIF»
+«IF hasKeyword("synthetic")»synthetic «ENDIF»
+«IF isFinal()»final «ENDIF»
+«IF isSynchronized()»synchronized «ENDIF»
+«IF isNative()»native «ENDIF»
+«IF !constructor(parent)»
+«EXPAND Type::typeName FOR type»«EXPAND Type::arrayMultiplicity FOR this» «""»
+«ENDIF»
+ «name»(«EXPAND parameters(style) FOR this»)
+«EXPAND throws(style) FOR this»
+;
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE parameters(StyledElement style) FOR Operation»
+«EXPAND parameter FOREACH ownedParameter.select(e|e.direction == ParameterDirectionKind::in && e.name != null) SEPARATOR ", "»
+«ENDDEFINE»
+
+«DEFINE parameter FOR Parameter»
+«IF hasKeyword("final")»final «ENDIF»
+«IF hasKeyword("synthetic")»new «ENDIF»
+«EXPAND Type::typeName FOR type»«EXPAND Type::arrayMultiplicity FOR this»«""»
+«IF hasKeyword("synthetic")»(){}«ENDIF»
+ «name»
+«ENDDEFINE»
+
+«DEFINE throws(StyledElement style) FOR Operation»
+«IF !raisedException.isEmpty»
+throws «""-»
+«FOREACH raisedException AS exception SEPARATOR ", "»
+«EXPAND Type::typeName FOR exception»
+«ENDFOREACH»
+«ENDIF»
+«ENDDEFINE»

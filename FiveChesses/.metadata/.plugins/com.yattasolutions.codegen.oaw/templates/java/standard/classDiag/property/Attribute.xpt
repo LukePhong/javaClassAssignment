@@ -1,0 +1,70 @@
+«EXTENSION Utility»
+«IMPORT uml»
+«IMPORT UMLLabProfile»
+
+«IMPORT java::standard::classDiag::classifier»
+
+«EXTENSION java::standard::classDiag::property::AttributeExtensions»
+«EXTENSION java::standard::classDiag::classifier::ClassifierExtensions»
+
+
+«DEFINE attribute (StyledElement style,Classifier parent,MemberFragmentTuple fragment) FOR Property»
+«IF fragment.partId==0»
+«EXPAND attribute_FRG_Declaration(style, parent) FOR this»
+«ELSEIF fragment.partId==1»
+«EXPAND attribute_FRG_Setter(style, parent) FOR this»
+«ELSEIF fragment.partId==2»
+«EXPAND attribute_FRG_Getter(style, parent) FOR this»
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE attribute_FRG_Declaration(StyledElement style, Classifier parent)  FOR Property»
+«IF !parent.isInterface() || isConstant()»
+«REM»«EXPAND java::standard::Comment::comment FOR this»«ENDREM»
+«attrVis(parent)» «IF isStatic»static «ENDIF»«IF isFinal()»final «ENDIF»«IF isTransient()»transient «ENDIF-»
+«EXPAND java::standard::Multiplicity::typedMultiplicityElement FOR this» «name»«IF ^default != null» = «^default»«ENDIF»;
+
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE attribute_FRG_Setter(StyledElement style, Classifier parent)  FOR Property»
+«REM»
+  Don't generate a setter, if 
+   - the field is constant: isStatic && isLeaf && isReadOnly
+   - the field is final:    isLeaf && isReadOnly
+   - the field is readonly: isReadOnly
+   => !isReadOnly
+«ENDREM»
+«IF !isReadOnly»
+«LET getWordAlias("value") AS value»
+«childVisibilityString(parent)» «IF isStatic»static «ENDIF»«IF isLeaf»final «ENDIF»void set«name.methodSuffix()»(«IF getBooleanAlias(false)»final «ENDIF»«EXPAND java::standard::Multiplicity::typedMultiplicityElement FOR this» «value»)«""»
+«IF parent.isInterface()»
+;
+
+«ELSE»
+ {
+   «"   "»«thisName(parent)» = «value»;
+}
+
+«ENDIF»
+«ENDLET» 
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE attribute_FRG_Getter(StyledElement style, Classifier parent)  FOR Property»
+«IF !isConstant()»
+«REM»«IF parent.isInterface()»
+«EXPAND java::standard::Comment::comment FOR this»
+«ENDIF»«ENDREM»
+«childVisibilityString(parent)» «IF isStatic»static «ENDIF»«IF isLeaf»final «ENDIF»«EXPAND java::standard::Multiplicity::typedMultiplicityElement FOR this» «IF type != null && type.isPrimitiveType("boolean") && upper==1 && !isQualified()»is«ELSE»get«ENDIF»«name.methodSuffix()»()«""»
+«IF parent.isInterface()»
+;
+
+«ELSE»
+ {
+   return «thisName(parent)»;
+}
+
+«ENDIF»
+«ENDIF»
+«ENDDEFINE»

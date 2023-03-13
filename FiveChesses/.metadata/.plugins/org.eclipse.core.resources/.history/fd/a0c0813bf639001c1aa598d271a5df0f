@@ -1,0 +1,8 @@
+package view;
+
+public class VProcess {
+	VMethods methods;
+	public void VMethods() {
+		
+	}
+}

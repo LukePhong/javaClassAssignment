@@ -1,0 +1,12 @@
+content_assist_autoactivation_triggers_java=.qwertyuioplkjhgfdsazxcvbnm
+content_assist_favorite_static_members=org.junit.Assert.*;org.junit.Assume.*;org.junit.jupiter.api.Assertions.*;org.junit.jupiter.api.Assumptions.*;org.junit.jupiter.api.DynamicContainer.*;org.junit.jupiter.api.DynamicTest.*;org.mockito.ArgumentMatchers.*;org.mockito.Mockito.*
+content_assist_lru_history=<?xml version\="1.0" encoding\="UTF-8" standalone\="no"?><history maxLHS\="100" maxRHS\="10"><lhs name\="control.Controller"><rhs name\="control.Controller"/></lhs><lhs name\="board.Position"><rhs name\="board.Position"/></lhs><lhs name\="java.lang.Enum"><rhs name\="util.ExchangeCommands"/><rhs name\="board.Conditions"/></lhs><lhs name\="java.lang.constant.Constable"><rhs name\="util.ExchangeCommands"/><rhs name\="board.Conditions"/></lhs><lhs name\="board.Conditions"><rhs name\="board.Conditions"/></lhs><lhs name\="java.util.Iterator"><rhs name\="java.util.Scanner"/></lhs><lhs name\="java.io.Closeable"><rhs name\="java.util.Scanner"/></lhs><lhs name\="java.lang.AutoCloseable"><rhs name\="java.util.Scanner"/></lhs><lhs name\="util.ExchangeCommands"><rhs name\="util.ExchangeCommands"/></lhs><lhs name\="mapper.BoardMap"><rhs name\="mapper.BoardMap"/></lhs><lhs name\="board.Step"><rhs name\="board.Step"/></lhs><lhs name\="board.Player"><rhs name\="board.Player"/></lhs><lhs name\="util.Event"><rhs name\="util.WinCheck"/><rhs name\="util.Regret"/><rhs name\="util.PutChess"/><rhs name\="util.Reset"/></lhs><lhs name\="util.WinCheck"><rhs name\="util.WinCheck"/></lhs><lhs name\="util.PutChess"><rhs name\="util.PutChess"/></lhs><lhs name\="util.Reset"><rhs name\="util.Reset"/></lhs></history>
+content_assist_number_of_computers=13
+eclipse.preferences.version=1
+org.eclipse.jdt.internal.ui.navigator.layout=2
+org.eclipse.jdt.internal.ui.navigator.librariesnode=true
+org.eclipse.jdt.ui.formatterprofiles.version=21
+spelling_locale_initialized=true
+typefilter_migrated=true
+useAnnotationsPrefPage=true
+useQuickDiffPrefPage=true

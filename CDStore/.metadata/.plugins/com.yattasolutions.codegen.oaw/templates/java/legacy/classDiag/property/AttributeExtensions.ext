@@ -1,0 +1,19 @@
+import uml;
+import UMLLabProfile;
+
+extension java::standard::classDiag::property::AttributeExtensions reexport;
+extension java::legacy::Utility reexport;
+extension java::legacy::classDiag::classifier::ClassifierExtensions;
+
+getModifier(Property this, int modifier, Classifier parent) :
+	switch (modifier) {
+		case 1: (if !LegacyStyledElement.isInstance(this) || ((LegacyStyledElement)this).associatedElement.isEmpty then childVisibilityString(parent) else "private")
+		case 3: optionalForInterface(isStatic, " static ", parent)
+		case 4: optionalForInterface(isFinal(), " final ", parent)
+		case /*6*/2: (if isTransient() then " transient " else "")
+		case /*7*/5: (if isVolatile() then " volatile " else "")
+		default: "No_valid_modifier"
+	};
+
+multiDeclaration(Property this) :
+     { this };

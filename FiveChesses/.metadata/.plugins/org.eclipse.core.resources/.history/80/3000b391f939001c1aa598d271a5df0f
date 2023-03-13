@@ -1,0 +1,26 @@
+package view;
+
+import util.Event;
+import util.Processor;
+
+public abstract class VMethods implements Processor{
+	
+}
+
+class hQuit extends VMethods{
+	
+	@Override
+	public Object process(Object e) {
+		System.out.println("Quiting");
+		return e;
+	}
+}
+
+class hWrongCommand extends VMethods{
+	
+	@Override
+	public Object process(Object e) {
+		System.out.println("No this Command! Check Your Input!");
+		return e;
+	}
+}

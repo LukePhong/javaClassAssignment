@@ -1,0 +1,32 @@
+package mapper;
+
+import java.nio.Buffer;
+import java.util.Map;
+
+import board.*;
+
+
+public class BoardMap {
+	private static BoardBuffer buff=new BoardBuffer();
+	public BoardMap mapbuffer=new BoardMap();
+	
+	
+	public boolean insert(Position p) {
+		
+		return true;
+	}
+
+
+	public BoardBuffer get() {
+		
+		return buff;
+	}
+
+
+	public static boolean find(Position tmpPos) {
+		
+		return (Map)buff.get(tmpPos);
+	};
+	
+	
+}

@@ -1,0 +1,26 @@
+package view;
+
+import java.util.Map;
+
+import board.*;
+import control.*;
+
+public class Viewer {
+	
+	private static final int SIZE_COL=19;
+	
+	public static void main(String[] args) {
+		startup();
+	}
+
+	private static void startup() {
+		Controller.init();
+		System.out.println("Welcome!");
+		outputBoard();
+	}
+
+	private static void outputBoard() {
+		Map tmp=Controller.getMap();
+		
+	}
+}

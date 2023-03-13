@@ -1,0 +1,11 @@
+package Interface;
+import javax.swing.JFrame;
+
+
+public class Interface extends JFrame{
+	public Interface() {
+		// TODO Auto-generated constructor stub
+		this.add(BorderLayout.NORTH,);
+	}
+	
+}

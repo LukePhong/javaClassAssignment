@@ -1,0 +1,59 @@
+package Interface;
+
+import javax.swing.*;
+
+import java.awt.*;
+
+
+public class Interface extends JFrame{
+	
+	public Interface(String title) {
+		super(title);
+		
+		JTextField numlineField=new JTextField("0");
+		GridLayout butGridLayout=new GridLayout(6,4);
+		
+		
+		
+		JPanel butPanel=new JPanel(butGridLayout);
+		butPanel.add(new JButton("%"));
+		butPanel.add(new JButton("C"));
+		butPanel.add(new JButton("CE"));
+		butPanel.add(new JButton("backspace"));
+		butPanel.add(new JButton("%"));
+		butPanel.add(new JButton("%"));
+		butPanel.add(new JButton("%"));
+		butPanel.add(new JButton("/"));
+		butPanel.add(new JButton("7"));
+		butPanel.add(new JButton("8"));
+		butPanel.add(new JButton("9"));
+		butPanel.add(new JButton("*"));
+		butPanel.add(new JButton("4"));
+		butPanel.add(new JButton("5"));
+		butPanel.add(new JButton("6"));
+		butPanel.add(new JButton("-"));
+		butPanel.add(new JButton("1"));
+		butPanel.add(new JButton("2"));
+		butPanel.add(new JButton("3"));
+		butPanel.add(new JButton("+"));
+		butPanel.add(new JButton("%"));
+		butPanel.add(new JButton("0"));
+		butPanel.add(new JButton("."));
+		butPanel.add(new JButton("="));
+
+		
+		
+		
+		this.add(BorderLayout.NORTH,numlineField);
+		this.add(BorderLayout.SOUTH,butPanel);
+		
+	}
+	
+	public static void main(String[] args) {
+		Interface startInterface=new Interface("Calculator");
+		startInterface.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		startInterface.setSize(600,800);
+		startInterface.setVisible(true);
+		
+	}
+}

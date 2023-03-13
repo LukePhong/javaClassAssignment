@@ -1,0 +1,112 @@
+«IMPORT uml»
+«IMPORT UMLLabProfile»
+«IMPORT PHPProfile»
+
+«EXTENSION Utility»
+«EXTENSION PHP::standard::structure::Attribute»
+«EXTENSION PHP::PHPMySQL::structure::Association»
+«EXTENSION PHP::PHPMySQL::structure::AdditionalMember»
+
+
+«DEFINE role (Classifier parent,PHPMySQLStyledElement style,MemberFragmentTuple fragment) FOR Property»
+«IF fragment.partId==0»
+«IF this.isNavigable() && !isPrimitive(type) && !isMultivalued()»
+«EXPAND role_FRG_ToOneDeclaration(parent, style) FOR this»
+«ENDIF»
+«ELSEIF fragment.partId==1»
+«IF this.isNavigable() && !isPrimitive(type)»
+«IF isMultivalued()»
+«EXPAND role_FRG_ToManyGetter(parent, style) FOR this»
+«ELSE»
+«EXPAND role_FRG_ToOneGetter(parent, style) FOR this»
+«ENDIF»
+«ENDIF»
+«ELSEIF fragment.partId==2»
+«IF this.isNavigable() && !isPrimitive(type) && !isMultivalued()»
+«EXPAND role_FRG_ToOneSetter(parent, style) FOR this»
+«ENDIF»
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE role_FRG_ToOneDeclaration(Classifier parent, PHPMySQLStyledElement style)  FOR Property»
+«IF !Interface.isInstance(parent)»
+«EXPAND PHP::standard::Comment::comment»
+private «IF this.isStatic»static «ENDIF»$«name»;
+
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE role_FRG_ToOneSetter(Classifier parent, PHPMySQLStyledElement style)  FOR Property»
+«LET getWordAlias(name) AS value»
+«visibilityString(this)» «IF this.isStatic»static «ENDIF»function set«name.toFirstUpper()»($«value»)«""»
+«IF Interface.isInstance(parent)»
+;
+«ELSE»
+ {
+«"   "»«EXPAND PHP::standard::structure::Attribute::thisName(parent)» = $«value»;
+}
+«ENDIF»
+
+«ENDLET»
+«ENDDEFINE»
+
+«DEFINE role_FRG_ToOneGetter(Classifier parent, PHPMySQLStyledElement style)  FOR Property»
+/**
+ * Retrieves object(s) of type {@link #«EXPAND PHP::standard::structure::Unit::name(parent) FOR type»} identified by {@link #«EXPAND PHP::standard::structure::Attribute::thisName(parent)»} (Association '«association.name»').
+ * The foreign key in the database table is '«getForeignKey()»'.
+ «IF getOtherEnd().isNavigable()»
+ * The opposite of this association is accessible via {@link #«EXPAND PHP::standard::structure::Unit::name(parent) FOR type»->get«getOtherEnd().name.toFirstUpper()»()}.
+ «ENDIF»
+ «REM»* The opposite of this association is accessible via the "«getOtherEnd().name»" property.«ENDREM»
+ * @return a {@link #«EXPAND PHP::standard::structure::Unit::name(parent) FOR type»}
+ */
+«visibilityString(this)» «IF this.isStatic»static «ENDIF»function get«name.toFirstUpper()»()«""»
+«IF Interface.isInstance(parent)»
+;
+«ELSE»
+ {
+   return «EXPAND PHP::standard::structure::Unit::name(parent) FOR type»::buildFromSQLWithPK(«EXPAND PHP::standard::structure::Attribute::thisName(parent)»);
+}
+«ENDIF»
+
+«ENDDEFINE»
+
+
+«DEFINE role_FRG_ToManyGetter(Classifier parent, PHPMySQLStyledElement style)  FOR Property»
+/**
+ * Retrieves an array of all {@link #«EXPAND PHP::standard::structure::Unit::name(parent) FOR type»}s identified by the foreign key {@link #«getForeignKey()»} from the database for field «name».
+ * @return an array of {@link #«EXPAND PHP::standard::structure::Unit::name(parent) FOR type»}s.
+ */
+«visibilityString(this)» «IF this.isStatic»static «ENDIF»function get«name.pluralize().toFirstUpper()»()«""»
+«IF Interface.isInstance(parent)»
+;
+«ELSE»
+ {
+«LET getOtherEnd() AS partnerRole»
+«IF partnerRole.isNavigable() && !partnerRole.isMultivalued()»«REM»other table contains this->pk as foreign key«ENDREM»
+   $query = 'SELECT * FROM `«EXPAND PHP::standard::structure::Unit::name(parent) FOR type»` where `«partnerRole.getForeignKey()»`="%s"';
+«ELSE»«REM»link is realized via a relation table«ENDREM»
+   $query = 'SELECT * FROM `Relation_«EXPAND PHP::standard::structure::Unit::name(parent) FOR parent»_TO_«EXPAND PHP::standard::structure::Unit::name(parent) FOR parent»` where `«partnerRole.getForeignKey()»`="%s"';
+«ENDIF»
+   $query = sprintf($query, mysql_real_escape_string($this->pk, $link));
+
+   $resource = mysql_query( $query, $link );
+   if( $resource === FALSE) {
+      throw new Exception('Error executing query "'.$query.'": '.mysql_error($link));
+   }
+   $list = array();
+   while( $row = mysql_fetch_assoc($resource) ) {
+«IF partnerRole.isNavigable()»
+      $list[] = «EXPAND PHP::standard::structure::Unit::name(parent) FOR type»::buildFromAssocArray($row);
+«ELSE»
+      $key = $row['«this.name»'];
+      $list[] = «EXPAND PHP::standard::structure::Unit::name(parent) FOR type»::buildFromSQLWithPK($key);
+«ENDIF»
+   }
+
+   return $list;
+«ENDLET»
+}
+«ENDIF»
+
+«ENDDEFINE»

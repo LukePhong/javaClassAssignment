@@ -1,0 +1,60 @@
+«IMPORT uml»
+«IMPORT UMLLabProfile»
+
+«IMPORT java::standard::classDiag::classifier»
+
+«EXTENSION java::standard::classDiag::operation::OperationExtensions»
+«EXTENSION java::standard::classDiag::classifier::ClassifierExtensions»
+
+«DEFINE operation (StyledElement style,Classifier parent,MemberFragmentTuple fragment) FOR Operation»
+«IF fragment.partId==0»
+«EXPAND operation_FRG_Single(style, parent) FOR this»
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE operation_FRG_Single(StyledElement style, Classifier parent)  FOR Operation»
+«scopeAddSDMImports()»
+«EXPAND java::standard::Comment::comment FOR this»
+«childVisibilityString(parent)» «IF isAbstract»abstract «ENDIF»«IF isNative()»native «ENDIF»«IF isSynchronized()»synchronized «ENDIF»
+«IF isStatic»static «ENDIF»«IF isFinal()»final «ENDIF»
+«EXPAND java::standard::Multiplicity::operationReturnType FOR this»
+ «IF !constructor(parent)»«name»«ENDIF»(«EXPAND parameters(style) FOR this»)«EXPAND throws(style) FOR this»
+«IF isAbstract || parent.isInterface() || isNative()»
+;
+
+«ELSE»
+ {
+«LET getBody() AS body»
+«IF body.length == 0»
+   // TODO implement this operation
+   throw new UnsupportedOperationException("not implemented");
+«ELSE»
+«indent(body, "   ")»
+«ENDIF»
+«ENDLET»
+}
+
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE parameters(StyledElement style) FOR Operation»
+«EXPAND parameter FOREACH ownedParameter.select(e|e.direction == ParameterDirectionKind::in && e.name != null) SEPARATOR ", "»
+«ENDDEFINE»
+
+«DEFINE parameter FOR Parameter»
+«IF hasKeyword("final")»final «ENDIF»
+«REM» TODO #1519
+«EXPAND java::standard::Multiplicity::typedMultiplicityElement FOR this»
+«ENDREM»
+«EXPAND java::standard::Type::typeOrDefault(type) FOR this»
+«IF upper==-1»«IF !Array.isInstance(this)»[]«ELSE»«EXPAND java::standard::Multiplicity::arrayBraces»«ENDIF»«ENDIF» «name»
+«ENDDEFINE»
+
+«DEFINE throws(StyledElement style) FOR Operation»
+«IF !raisedException.isEmpty»
+throws «""-»
+«FOREACH raisedException AS exception SEPARATOR ", "»
+«exception.typeString(getSetOfEObjects(exception, this))»
+«ENDFOREACH»
+«ENDIF»
+«ENDDEFINE»

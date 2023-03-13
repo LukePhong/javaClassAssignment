@@ -1,0 +1,71 @@
+«IMPORT uml»
+«IMPORT UMLLabProfile»
+«IMPORT java::standard»
+
+«EXTENSION Utility»
+«EXTENSION java::legacy::classDiag::classifier::ClassifierExtensions»
+
+«DEFINE classifier(LegacyStyledElement style) FOR Classifier»
+«EXPAND java::standard::Comment::comment FOR this»
+«FOREACH getListAliasWithAnnotations(5) AS modifier»
+«IF Annotation.isInstance(modifier)»
+«EXPAND java::legacy::classDiag::Annotation::annotation(style) FOR (Annotation) modifier»
+«ELSE»
+«getModifier((int) modifier)»
+«ENDIF»
+«ENDFOREACH»
+ «getClassOrInterfaceString()» «EXPAND Type::type(this) FOR this»
+«LET getGeneralization() AS generalization»
+«IF generalization != null && !isInterface()»
+ extends «EXPAND Type::typeWithAnnotation(generalization) FOR generalization.general»
+«ENDIF»
+«ENDLET»
+«IF !getInterfaces().isEmpty» «extendsClause()» «""-»
+«FOREACH getInterfaces() AS relationship SEPARATOR ", "»
+«IF relationship.target.size > 0»
+«EXPAND Type::typeWithAnnotation(relationship) FOR (Classifier) relationship.target.fromSingleton()»
+«ENDIF»
+«ENDFOREACH»
+«ENDIF»
+{
+«IF isEnum() && !isInterface()»«REM»TODO !isInterface() should not be needed«ENDREM»
+«LET (Enumeration) this AS enum»
+«FOREACH enum.ownedLiteral AS literal SEPARATOR ", "»
+«FOREACH literal.getListAliasWithAnnotations() AS modifier»
+«IF Annotation.isInstance(modifier)»
+«EXPAND java::legacy::classDiag::Annotation::annotation(style) FOR (Annotation) modifier»
+«ENDIF»
+«ENDFOREACH»
+«literal.name»
+«LET (Expression)literal.specification AS expression»
+«IF expression != null»
+(«""-»
+«FOREACH expression.operand AS operand SEPARATOR ", "»
+«operand.stringValue()»
+«ENDFOREACH»
+)«""-»
+«ENDIF»
+«ENDLET»
+«IF literal.hasKeyword("innerclass")»
+{
+«literal.getBlockAlias("")»
+}
+«ENDIF»
+«ENDFOREACH»
+«IF getBooleanAlias(false)»,«ENDIF»
+«FILE "bufferRegion" buffer»
+«EXPAND java::standard::classDiag::classifier::File::classifierChildren(style) FOR this»
+«ENDFILE»
+«IF getGlobalVar("bufferRegion").indentWithRanges("").length == 0»
+«IF getBooleanAlias(true)»;«ENDIF»
+«ELSE»
+;
+«getGlobalVar("bufferRegion").indentWithRanges("")»
+«ENDIF»
+
+«ENDLET»
+«ELSE»
+«EXPAND java::standard::classDiag::classifier::File::classifierChildren(style) FOR this»
+«ENDIF»
+}«IF getBooleanAlias(false)»;«ENDIF»
+«ENDDEFINE»

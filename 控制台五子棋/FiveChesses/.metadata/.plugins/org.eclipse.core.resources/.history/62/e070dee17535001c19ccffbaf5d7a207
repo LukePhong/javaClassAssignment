@@ -1,0 +1,5 @@
+package board;
+
+public enum Conditions {
+
+}

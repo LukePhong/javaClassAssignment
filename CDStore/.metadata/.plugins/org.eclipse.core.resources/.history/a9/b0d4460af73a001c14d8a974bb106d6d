@@ -1,0 +1,43 @@
+package Mapper;
+
+import Bean.Disk;
+import Bean.User;
+import Bean.storeDisk;
+import Bean.storeUser;
+
+public class Map {
+	private storeDisk sDisk;
+	private storeUser sUser;
+	
+	public storeDisk getsDisk() {
+		return sDisk;
+	}
+	public storeUser getsUser() {
+		return sUser;
+	}
+	
+	public void addDisk(Disk d) {
+		// TODO Auto-generated method stub
+
+	}
+	
+	private void addUser(User u) {
+		// TODO Auto-generated method stub
+
+	}
+	
+	private void delDisk() {
+		// TODO Auto-generated method stub
+
+	}
+	
+	private void delUser() {
+		// TODO Auto-generated method stub
+
+	}
+	
+	private void reportStore() {
+		System.out.println(sDisk.toString());
+		System.out.println(sUser.toString());
+	}
+}

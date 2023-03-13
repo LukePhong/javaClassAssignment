@@ -1,0 +1,37 @@
+«IMPORT uml»
+«IMPORT UMLLabProfile»
+
+«EXTENSION java::legacy::Utility»
+«EXTENSION Utility»
+
+«DEFINE annotation(LegacyStyledElement style) FOR Annotation»
+@«name»
+«IF annotationParameters.size == 0»
+«IF getBooleanAlias(false)»()«ENDIF»
+«ELSE»
+(«""-»
+«FOREACH annotationParameters AS param SEPARATOR ", "»
+«IF annotationParameters.size > 1 || !param.skipName»
+«param.name» = «""-»
+«ENDIF»
+«LET param.skipArray AS skipArray»
+«IF !skipArray»
+{«""-»
+«ENDIF»
+«IF param.valueSpecifications.isEmpty»«REM»Only value specifications OR further annotations, not both!«ENDREM»
+«EXPAND annotation(style) FOREACH param.annotations SEPARATOR ", "»
+«ELSE»
+«FOREACH param.valueSpecifications AS value SEPARATOR ", "»
+«value.getAnnotationString()»
+«ENDFOREACH»
+«ENDIF»
+«IF !skipArray»
+«IF getBooleanAlias(false)»,«ENDIF»«REM»see #1044«ENDREM»
+}«""-»
+«ENDIF»
+«ENDLET»
+«ENDFOREACH»
+)«""-»
+«ENDIF»
+
+«ENDDEFINE»

@@ -1,0 +1,34 @@
+package Interface;
+
+import javax.swing.*;
+
+import java.awt.*;
+
+
+public class Interface extends JFrame{
+	
+	public Interface(String title) {
+		super(title);
+		
+		JTextField numlineField=new JTextField("0");
+		GridLayout butGridLayout=new GridLayout(6,4);
+		butGridLayout.add(new JButton("%"));
+		
+		
+		
+		JPanel butPanel=new JPanel(butGridLayout);
+		
+		
+		this.add(BorderLayout.NORTH,numlineField);
+		this.add(BorderLayout.SOUTH,butPanel);
+		
+	}
+	
+	public static void main(String[] args) {
+		Interface startInterface=new Interface("Calculator");
+		startInterface.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		startInterface.setSize(600,800);
+		startInterface.setVisible(true);
+		
+	}
+}

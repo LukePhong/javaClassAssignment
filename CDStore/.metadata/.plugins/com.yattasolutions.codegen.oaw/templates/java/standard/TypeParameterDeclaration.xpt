@@ -1,0 +1,11 @@
+«IMPORT uml»
+«IMPORT UMLLabProfile»
+
+«EXTENSION Utility»
+
+«DEFINE type(Type t) FOR Element»
+«REM»«IF TypeParameterDeclaration.isInstance(element)» TODO does not work when this == null«ENDREM»
+«IF TypeParameterDeclaration.isInstance(this)»
+ <«((TypeParameterDeclaration) this).typeParameterDeclarationValue»> «""-»
+«ENDIF»
+«ENDDEFINE»

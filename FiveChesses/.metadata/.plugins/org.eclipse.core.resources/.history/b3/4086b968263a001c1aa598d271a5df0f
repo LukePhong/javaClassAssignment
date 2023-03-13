@@ -1,0 +1,43 @@
+package mapper;
+
+import board.*;
+import util.Event;
+import util.ExchangeCommands;
+
+
+public class BoardMap {
+	private BoardBuffer buff;
+	//public BoardMap mapbuffer=new BoardMap();
+	//private Event lastPosEvent;
+	
+	public BoardMap() {
+		buff=new BoardBuffer();
+		buff.preChesses.push(new Step(null,new Player(Conditions.player_black)));//white first
+	}
+	
+	public static Object handleEvent(ExchangeCommands x,Event e) {
+		
+		return EventProcess.processExchangeCommand(x,e);
+	}
+	
+	public boolean insert(Position p) {
+		
+		Conditions tmPlayer=this.buff.preChesses.peek().getPlayer().p==Conditions.player_black?Conditions.player_wight:Conditions.player_black;
+		buff.board.put(p,new Player(tmPlayer));
+		return true;
+	}
+
+
+	public BoardBuffer get() {
+		
+		return buff;
+	}
+
+
+	public Player find(Position tmpPos) {
+		
+		return this.buff.board.get(tmpPos);
+	};
+	
+	
+}

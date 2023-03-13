@@ -1,0 +1,21 @@
+import uml;
+
+extension Utility reexport;
+
+operationTypeString(Operation this) :
+	type.typeString(this);
+
+initializer(Operation this) :
+	type == null && ownedParameter.isEmpty && hasInitializerName() && hasKeyword("init");
+
+constructor(Operation this, Classifier parent) :
+	type == parent && name == parent.name && hasKeyword("create");
+
+isSynchronized(Operation this) :
+	hasKeyword("synchronized");
+	
+isNative(Operation this) :
+	hasKeyword("native");
+
+isFinal(Operation this) :
+	isLeaf;

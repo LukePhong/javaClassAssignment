@@ -1,0 +1,197 @@
+«IMPORT uml»
+«IMPORT UMLLabProfile»
+
+«EXTENSION Utility»
+«EXTENSION PHP::standard::structure::Unit»
+
+«REM»
+Start minimal block for an element. Overriden by specific templates.
+Invoked e.g. by the artifact template.
+«ENDREM»
+«DEFINE start(Namespace currentNamespace, StyledElement style) FOR Element»
+«ENDDEFINE»
+
+«REM»
+End minimal block for an element. Overriden by specific templates.
+Invoked e.g. by the artifact template.
+«ENDREM»
+«DEFINE end(Namespace currentNamespace, StyledElement style) FOR Element»
+«ENDDEFINE»
+
+«REM»
+Generate a whole compilation unit (file), specified with a UML deployment.
+«ENDREM»
+«DEFINE unit(Namespace currentNamespace, StyledElement style) FOR Classifier»
+«scopeEnter()»
+«FILE getFileName() + ".php"»
+<?«IF getBooleanAlias(true)»php «ENDIF»
+«IF getBooleanAlias(false)»declare(encoding='UTF-8');«ENDIF»
+«EXPAND classifier(currentNamespace,style)»
+«IF getBooleanAlias(true)»?>«ENDIF»
+«ENDFILE»
+«EXPAND additionalFiles(currentNamespace, style) FOR this»
+«ENDDEFINE»
+
+«DEFINE additionalFiles(Namespace currentNamespace, StyledElement style) FOR Classifier»
+«ENDDEFINE»
+
+«REM»
+Start block for a namespace. Only the declaration if necessary.
+«ENDREM»
+«DEFINE start(Namespace currentNamespace, StyledElement style) FOR Package»
+«LET this.getQualifiedName("\\") AS packageName»
+«IF packageName != null»«REM»TODO does not work yet package != getModel()«ENDREM»
+
+«REM»TODO PHP supports nested namespaces as well as the 'bracketed syntax' with {...} «ENDREM»
+namespace «packageName»;
+
+«ENDIF»
+«ENDLET»
+«ENDDEFINE»
+
+«REM»
+Generate a whole namespace including children.
+«ENDREM»
+«DEFINE namespace(Namespace currentNamespace, StyledElement style) FOR Package»
+«EXPAND start(currentNamespace, style)»
+«FOREACH ownedElement AS element»
+«IF Package.isInstance(element)»
+«EXPAND namespace(this, element.style()) FOR (Package)element»
+«ELSEIF ((Class.isInstance(element) || Interface.isInstance(element)) || Enumeration.isInstance(element)) && !Behavior.isInstance(element)»
+«EXPAND classifier(this, element.style()) FOR (Classifier) element»
+«ENDIF»
+«ENDFOREACH»
+«EXPAND end(currentNamespace, style)»
+«ENDDEFINE»
+
+«DEFINE start(Namespace currentNamespace, StyledElement style) FOR Classifier»
+«EXPAND start(currentNamespace, package.style()) FOR package»
+«FILE "deferImports" defer»
+«EXPAND import FOR this»
+«scopeLeave()»
+
+«ENDFILE»
+
+«EXPAND PHP::standard::Comment::comment»
+«EXPAND classifier(currentNamespace)»
+«ENDDEFINE»
+
+«DEFINE import FOR Classifier»
+«FOREACH scopeGetImports("\\","") AS import»
+«IF String.isInstance(import)»
+use «import»;
+«ELSEIF falseForReverseTrueForForward() && Import.isInstance(import)»
+«LET ((Import) import).importedElement AS e»
+«IF ((Import) import).staticText != null»
+use «((NamedElement) e).getQualifiedName("\\")» as «((Import) import).staticText»;
+«ELSE»
+use «((NamedElement) e).getQualifiedName("\\")»;
+«ENDIF»
+«ENDLET»
+«ENDIF»
+«ENDFOREACH»
+«ENDDEFINE»
+
+«DEFINE classifier(Namespace currentNamespace) FOR Classifier»
+«IF Enumeration.isInstance(this)»
+/** 
+ * This is a very basic enum implementation, as PHP does not support enumerations natively.
+ * To adapt it, overwrite this template in your own CodeStyle.
+ */
+«ENDIF» 
+«IF isLeaf»final «ENDIF»
+«IF isAbstract»abstract «ENDIF»
+«REM»info: the following line explicitly checks all possible types for classifiers to support correct reverse engineering«ENDREM»
+«LET Interface.isInstance(this) AS isInterface»
+«IF isInterface»interface «ELSEIF Class.isInstance(this)»class «ELSEIF Enumeration.isInstance(this)»final /*enumeration*/ class «ELSE»«fail("unsupported classifier " + this)»«ENDIF»«EXPAND name(this)»
+«LET getGeneralization() AS generalization»
+«IF generalization != null && !isInterface»
+ extends «EXPAND name(currentNamespace) FOR generalization.general»
+«ENDIF»
+«ENDLET»
+«IF !getInterfaces().isEmpty» 
+«IF isInterface»
+ extends
+«ELSE»
+ implements «""»
+«ENDIF»
+«FOREACH getInterfaces() AS relationship SEPARATOR ", "»
+«IF relationship.target.size > 0»
+«LET (Classifier) relationship.target.fromSingleton() AS super»
+«EXPAND name(currentNamespace) FOR super»
+«ENDLET»
+«ENDIF»
+«ENDFOREACH»
+«ENDIF»
+ {
+«ENDLET»
+«ENDDEFINE»
+
+«DEFINE classifier(Namespace currentNamespace, StyledElement style) FOR Classifier»
+«EXPAND start(currentNamespace, style)»
+«EXPAND classifierChildren(this, style)»
+«EXPAND end(currentNamespace, style)»
+«ENDDEFINE»
+
+«DEFINE end(Namespace currentNamespace, StyledElement style) FOR Classifier»
+}
+«REM»«EXPAND end(currentNamespace, package.style()) FOR package»«ENDREM»
+«ENDDEFINE»
+
+
+«DEFINE classifierChildren(Namespace currentNamespace, StyledElement style) FOR Classifier»
+«FILE "indentRegion0_4f3dad5b" buffer»
+«REM» collect members (properties and operations) and nested classifiers: TODO add nestedClassifier to the list of member«ENDREM»
+«FOREACH (List[MemberFragmentTuple]) getListAlias(getListOfMemberFragmentTuple()) AS fragment»
+«LET fragment.element AS member»
+«IF Property.isInstance(member)»
+«LET (Property) member AS prop»
+«IF prop.association == null || prop.association.isReference()»
+«EXPAND Attribute::attribute(this, prop.style(), fragment) FOR prop»
+«ELSEIF prop.getOtherEnd() != null»
+«EXPAND Association::role(this, prop.style(), fragment) FOR prop»
+«ENDIF»
+«ENDLET»
+«ELSEIF Operation.isInstance(member)»
+«LET (Operation) member AS operation»
+«EXPAND Operation::operation(this, operation.style(), fragment) FOR operation»
+«ENDLET»
+«ELSEIF EnumerationLiteral.isInstance(member)»
+«LET (EnumerationLiteral) member AS enumerationLiteral»
+«EXPAND EnumerationLiteral::literal(this, enumerationLiteral.style(), fragment) FOR enumerationLiteral»
+«ENDLET»
+«REM»
+«ELSEIF Classifier.isInstance(member) && !Behavior.isInstance(member) && member != this && !member.hasKeyword("sameFile")»
+«LET (Classifier) member AS nestedClassifier»
+«EXPAND classifier(nestedClassifier.style()) FOR nestedClassifier»
+«ENDLET»
+«ENDREM»
+«ELSEIF member==this»
+«EXPAND AdditionalMember::additionalMember(this, style, fragment) FOR this»
+«REM»
+«ELSEIF EmptyStatement.isInstance(member) && this.partId == -42»
+«EXPAND emptyMember(fragment) FOR (EmptyStatement) member»
+«ENDREM»
+«ENDIF»
+«ENDLET»
+«ENDFOREACH»
+«ENDFILE»
+«getGlobalVar("indentRegion0_4f3dad5b").indentWithRanges("   ")»
+
+«ENDDEFINE»
+
+
+«DEFINE name(Namespace currentNamespace) FOR Type»
+«EXPAND name(currentNamespace, this.style()) FOR this»
+«ENDDEFINE»
+
+«DEFINE name(Namespace currentNamespace, StyledElement style) FOR Type»
+«this.phpTypeString(currentNamespace)»
+«ENDDEFINE»
+
+«REM»
+parse any line of code
+«ENDREM»
+«DEFINE anyLinesOfCode FOR Classifier»
+«REM»«getLineAlias(this, "undetectedContent")»«ENDREM»
+«ENDDEFINE»

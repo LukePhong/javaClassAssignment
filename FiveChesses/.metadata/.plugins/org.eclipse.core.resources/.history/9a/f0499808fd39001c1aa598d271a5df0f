@@ -1,0 +1,25 @@
+package control;
+
+import util.Event;
+
+public abstract class MEvent extends Event{
+	
+}
+
+class Quit extends MEvent{
+	
+}
+
+class WrongCommand extends MEvent{}
+
+class Help extends MEvent{}
+
+class PutChess extends MEvent{
+	public int row;
+	public int col;
+	
+	PutChess(int r,int c){
+		row=r;
+		col=c;
+	}
+}

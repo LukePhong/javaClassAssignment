@@ -1,0 +1,16 @@
+package board;
+
+import java.util.*;
+import mapper.*;
+
+public class BoardBuffer {
+	
+	public Map<Position,Player> board=new HashMap<Position,Player>();
+	
+	public Stack<Step> preChesses=new Stack<Step>();
+
+	public Player get(Position tmpPos) {
+		
+		return board.get(tmpPos);
+	}
+}

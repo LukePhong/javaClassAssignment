@@ -1,0 +1,46 @@
+package Controller;
+
+import Viewer.View;
+
+import Mapper.*;
+
+public class Control {
+	private Mapper.Map st;
+	private View vwView;
+	
+	public Control() {
+		st=new Mapper.Map();
+		vwView=new View();
+	}
+	
+	private void starthere() {
+		vwView.welcome();
+		parser(vwView.getMessage());
+		
+
+	}
+	
+	public static void main(String[] args) {
+		Control boss=new Control();
+		boss.starthere();
+	}
+	
+	private void addUser() {
+		st.addUser(vwView.addUser());
+		
+
+	}
+	
+	private void parser(String s) {
+		switch (s) {
+		case "au":
+		case "addUser":
+			addUser();
+			break;
+
+		default:
+			break;
+		}
+
+	}
+}

@@ -1,0 +1,17 @@
+import uml;
+import UMLLabProfile;
+
+extension Utility;
+
+// TODO overloading of extensions!
+String visibilityString(NamedElement this, boolean privateIsValid) :
+	if visibility==VisibilityKind::^private || privateIsValid && getBooleanAlias(true) then
+		"private "
+	else
+		switch (visibility) {
+			case VisibilityKind::public    : "public "
+			case VisibilityKind::package   : ( if getBooleanAlias(false) then fail("invalid case, TODO remove") else "" )
+			case VisibilityKind::protected : "protected "
+			default                        : fail("invalid visitbility")
+		}
+;

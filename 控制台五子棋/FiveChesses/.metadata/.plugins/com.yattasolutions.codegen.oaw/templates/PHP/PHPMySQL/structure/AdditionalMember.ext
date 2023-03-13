@@ -1,0 +1,20 @@
+import uml;
+import UMLLabProfile;
+import PHPProfile;
+
+extension Utility;
+
+/**
+ * returns the list of all attributes of the given Classifier NOT those
+ * of the superclasses (causes trouble with reverse). Note that only 
+ * non-multivalued attributes are taken into account.
+ */
+Collection[Property] columns(Classifier this) :
+	((Collection[Property])this.getListAlias(this.attribute)).select(e|!e.isMultivalued())
+;
+
+String getPrimaryKey(Classifier this) :
+	if PrimaryKey.isInstance(this) then 
+		((PrimaryKey)this).keyName
+	else
+		"pk";

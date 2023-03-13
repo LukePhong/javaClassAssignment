@@ -1,0 +1,19 @@
+package control;
+
+import util.Event;
+
+public abstract class CEvent extends Event{
+	
+}
+
+class Quit extends CEvent{
+	
+}
+
+class WinCheck extends CEvent{
+	public boolean isWin;
+	
+	public void set(boolean b) {
+		isWin=b;
+	}
+}

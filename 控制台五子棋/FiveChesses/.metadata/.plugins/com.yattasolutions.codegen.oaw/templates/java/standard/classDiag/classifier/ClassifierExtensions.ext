@@ -1,0 +1,43 @@
+import uml;
+import UMLLabProfile;
+
+extension Utility reexport;
+
+String getClassOrInterfaceString(Classifier this) :
+	if isAnnotation() then
+		"@interface"
+	else if isInterface() then
+	    "interface"
+	else if isEnum() then
+		"enum"
+	else if isClass() then
+		"class"
+	else
+		fail("unknown classifier");
+
+boolean isInterface(Classifier type) :
+	Interface.isInstance(type);
+
+boolean isEnum(Classifier type) :
+	Enumeration.isInstance(type);
+
+boolean isClass(Classifier type) :
+	Class.isInstance(type);
+
+boolean isAnnotation(Classifier this) :
+	isInterface() && AnnotationDefinition.isInstance(this);
+
+isFinal(Classifier this) :
+	isLeaf;
+
+isStatic(Classifier this) :
+	hasKeyword("static");
+
+isStrictFP(Classifier this) :
+	hasKeyword("strictfp");
+
+extendsClause(Classifier this) :
+	if isInterface() then
+		"extends"
+	else
+		"implements";

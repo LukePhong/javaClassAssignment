@@ -1,0 +1,57 @@
+package Mapper;
+
+
+import java.util.Iterator;
+
+import Bean.Disk;
+import Bean.User;
+import Bean.storeDisk;
+import Bean.storeUser;
+
+public class Map {
+	private storeDisk sDisk;
+	private storeUser sUser;
+	
+	public Map() {
+		sDisk=new storeDisk();
+		sUser=new storeUser();
+	}
+	
+	public storeDisk getsDisk() {
+		return sDisk;
+	}
+	public storeUser getsUser() {
+		return sUser;
+	}
+	
+	public void addDisk(Disk d) {
+		// TODO Auto-generated method stub
+
+	}
+	
+	public void addUser(User u) {
+		for (Iterator iterator =sUser.iterator(); iterator.hasNext();) {
+			User user = (User) iterator.next();
+			if(u.equals(user)) {System.out.println("User Deplicated");
+				return;
+			
+			}
+		}
+		sUser.add(u);
+	}
+	
+	private void delDisk() {
+		// TODO Auto-generated method stub
+
+	}
+	
+	private void delUser() {
+		// TODO Auto-generated method stub
+
+	}
+	
+	private void reportStore() {
+		System.out.println(sDisk.toString());
+		System.out.println(sUser.toString());
+	}
+}

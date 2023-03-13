@@ -1,0 +1,15 @@
+package util;
+
+public abstract class Event {
+	//public abstract void handle();
+}
+
+class PutChess extends Event{
+	public int row;
+	public int col;
+	
+	PutChess(int r,int c){
+		row=r;
+		col=c;
+	}
+}

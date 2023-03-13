@@ -1,0 +1,48 @@
+«IMPORT uml»
+«IMPORT UMLLabProfile»
+
+«EXTENSION JDTDisassembled::standard::structure::Utility»
+«EXTENSION java::standard::classDiag::property::AttributeExtensions»
+«EXTENSION java::standard::classDiag::classifier::ClassifierExtensions»
+«EXTENSION Utility»
+
+
+«DEFINE attribute (StyledElement style,Classifier parent,MemberFragmentTuple fragment) FOR Property»
+«IF fragment.partId==0»
+«EXPAND attribute_FRG_Declaration(style, parent) FOR this»
+«ELSEIF fragment.partId==1»
+«EXPAND attribute_FRG_Setter(style, parent) FOR this»
+«ELSEIF fragment.partId==2»
+«EXPAND attribute_FRG_Getter(style, parent) FOR this»
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE attribute_FRG_Declaration(StyledElement style, Classifier parent)  FOR Property»
+«visibilityString(true)»«""» 
+«IF isStatic»static «ENDIF»
+«IF isFinal()»final «ENDIF»
+«IF hasKeyword("synthetic")»synthetic «ENDIF»
+«IF isTransient()»transient «ENDIF»
+«IF hasKeyword("volatile")»volatile «ENDIF»
+«EXPAND Type::typeName FOR type»«EXPAND Type::arrayMultiplicity FOR this» «name» «IF ^default != null» = «^default»«ENDIF»;
+«ENDDEFINE»
+
+«DEFINE attribute_FRG_Setter (StyledElement style, Classifier parent)  FOR Property»
+«IF getBooleanAlias(true)»
+«LET getWordAlias("value") AS value»
+«visibilityString(false)»«""» 
+«IF isStatic»static «ENDIF»
+«IF isLeaf»final «ENDIF»
+void set«name.methodSuffix()»(«IF getBooleanAlias(false)»final «ENDIF»«EXPAND Type::typeName FOR type»«EXPAND Type::arrayMultiplicity FOR this» «value»);
+«ENDLET» 
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE attribute_FRG_Getter (StyledElement style, Classifier parent)  FOR Property»
+«IF getBooleanAlias(true)»
+«visibilityString(false)»«""» 
+«IF isStatic»static «ENDIF»
+«IF isLeaf»final «ENDIF»
+«EXPAND Type::typeName FOR type»«EXPAND Type::arrayMultiplicity FOR this» «IF type.isPrimitiveType("boolean")»is«ELSE»get«ENDIF»«name.methodSuffix()»();
+«ENDIF»
+«ENDDEFINE»

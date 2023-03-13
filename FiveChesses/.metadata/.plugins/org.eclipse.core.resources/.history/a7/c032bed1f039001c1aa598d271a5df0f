@@ -1,0 +1,14 @@
+package view;
+
+
+public interface VMethods {
+	void handle(Object p);
+}
+
+class hQuit implements VMethods{
+	
+	@Override
+	public void handle(Object e) {
+		System.out.println("Quiting");
+	}
+}

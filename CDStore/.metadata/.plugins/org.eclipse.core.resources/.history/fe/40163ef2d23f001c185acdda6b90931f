@@ -1,0 +1,72 @@
+package Controller;
+
+import Viewer.View;
+
+import java.util.Scanner;
+
+import Mapper.*;
+
+public class Control {
+	private Mapper.Map st;
+	private View vwView;
+	private Scanner cScanner=new Scanner(System.in);
+	
+	public Control() {
+		st=new Mapper.Map();
+		vwView=new View();
+	}
+	
+	private void starthere() {
+		vwView.welcome();
+		parser(vwView.getMessage());
+		
+
+	}
+	
+	public static void main(String[] args) {
+		Control boss=new Control();
+		boss.starthere();
+	}
+	
+	private void addUser() {
+		while (true) {
+			
+			st.addUser(vwView.addUser());
+			System.out.println("Finish");
+			System.out.println("Do you wanna add again?[y/n]");
+			
+			if(cScanner.next().equals("n")) {
+				break;
+			}
+		}
+
+	}
+	private void delUser() {
+		while (true) {
+			
+			st.delUser(vwView.delUser());
+			System.out.println("Finish");
+			System.out.println("Do you wanna add again?[y/n]");
+			
+			if(cScanner.next().equals("n")) {
+				break;
+			}
+		}
+	}
+	
+	private void parser(String s) {
+		switch (s) {
+		case "au":
+		case "addUser":
+			addUser();
+			break;
+		case "du":
+		case "deleteUser":
+			delUser();
+		default:
+			break;
+		}
+
+	}
+
+}

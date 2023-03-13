@@ -1,0 +1,34 @@
+package control;
+
+import java.security.PublicKey;
+
+import board.*;
+import mapper.*;
+
+public class Controller {
+	
+	
+	public static BoardMap mapbuffer=new BoardMap();
+	
+	
+	
+	public boolean storeBoard(Position p) {
+		
+		return mapbuffer.insert(p);
+	}
+	
+	public boolean isWin() {
+		
+		return true;
+	}
+
+	public static void init() {
+		
+		
+	}
+
+	public static BoardMap getMap() {
+		
+		return mapbuffer;
+	}
+}

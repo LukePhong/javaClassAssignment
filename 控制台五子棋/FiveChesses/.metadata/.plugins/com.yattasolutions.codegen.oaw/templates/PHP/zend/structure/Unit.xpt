@@ -1,0 +1,88 @@
+«IMPORT uml»
+«IMPORT UMLLabProfile»
+«IMPORT ZENDStyle»
+
+«EXTENSION Utility»
+«EXTENSION PHP::standard::structure::Unit»
+
+
+«DEFINE unit (Namespace currentNamespace, ZendStyledElement style) FOR Classifier»
+«IF ZendController.isInstance(this)»
+«EXPAND zendController(currentNamespace, style) FOR (ZendController)this»
+«ELSEIF ZendLibrary.isInstance(this)»
+«EXPAND zendLibrary(currentNamespace, style) FOR (ZendLibrary)this»
+«ELSEIF ZendModel.isInstance(this)»
+«EXPAND zendModel(currentNamespace, style) FOR (ZendModel)this»
+«ELSE»
+«fail("ZendStyle requires application of either ZendController, ZendLibrary or ZendModel.")»
+«ENDIF»
+«ENDDEFINE»
+
+«REM»
+Zend MVC Controller
+file application/controllers/TestController.php 
+class TestController
+«ENDREM»
+«DEFINE zendController (Namespace currentNamespace, ZendStyledElement style) FOR ZendController»
+«FILE "application/controllers/" + getQualifiedName("/") + "Controller.php"»
+<?php
+«REM»«EXPAND PHP::standard::structure::Unit::anyLinesOfCode»«ENDREM»
+«IF getBooleanAlias(true)»// Controller Class for the ZEND MVC Framework«ENDIF»
+
+«EXPAND PHP::standard::Comment::comment»
+class «this.name»Controller  extends Zend_Controller_Action {
+«EXPAND PHP::standard::structure::Unit::classifierChildren(this, style)»
+}
+«IF getBooleanAlias(true)»?>«ENDIF»
+«ENDFILE»
+«ENDDEFINE»
+
+«REM»
+Zend MVC Library
+file library/Zend/Ordner/Ordner/File.php
+class Zend_Ordner_Ordner_File
+«ENDREM»
+«DEFINE zendLibrary (Namespace currentNamespace, ZendStyledElement style) FOR ZendLibrary»
+«FILE "library/" + getQualifiedName("/") + ".php"»
+<?php
+«REM»«EXPAND PHP::standard::structure::Unit::anyLinesOfCode»«ENDREM»
+«IF getBooleanAlias(true)»// Library Class for the ZEND MVC Framework«ENDIF»
+
+«EXPAND PHP::standard::Comment::comment»
+«EXPAND PHP::standard::structure::Unit::classifier(currentNamespace) FOR this»
+«EXPAND PHP::standard::structure::Unit::classifierChildren(this, style)»
+}
+«IF getBooleanAlias(true)»?>«ENDIF»
+«ENDFILE»
+«ENDDEFINE»
+
+«REM»
+Zend MVC Model
+file application/models/Ordner/Test.php
+class Model_Ordner_Test
+«ENDREM»
+«DEFINE zendModel (Namespace currentNamespace, ZendStyledElement style) FOR ZendModel»
+«FILE "application/models/" + getQualifiedName("/") + ".php"»
+<?php
+«REM»«EXPAND PHP::standard::structure::Unit::anyLinesOfCode»«ENDREM»
+«IF getBooleanAlias(true)»// Model Class for the ZEND MVC Framework«ENDIF»
+
+«EXPAND PHP::standard::Comment::comment»
+«EXPAND PHP::standard::structure::Unit::classifier(currentNamespace) FOR this»
+«EXPAND PHP::standard::structure::Unit::classifierChildren(this, style)»
+}
+«IF getBooleanAlias(true)»?>«ENDIF»
+«ENDFILE»
+«ENDDEFINE»
+
+«DEFINE name(Namespace currentNamespace, ZendStyledElement style) FOR Type»
+«IF ZendController.isInstance(this)»
+«name»Controller
+«ELSEIF ZendLibrary.isInstance(this)»
+«getQualifiedName("_", 2)»
+«ELSEIF ZendModel.isInstance(this)»
+Application_Model_«getQualifiedName("_")»
+«ELSE»
+«fail("ZendStyle requires application of either ZendController, ZendLibrary or ZendModel.")»
+«ENDIF»
+«ENDDEFINE»
